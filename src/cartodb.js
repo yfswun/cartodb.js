@@ -5,7 +5,7 @@
 
     var cdb = root.cdb = {};
 
-    cdb.VERSION = '2.0.12';
+    cdb.VERSION = '2.0.21-dev';
 
     cdb.CARTOCSS_VERSIONS = {
       '2.0.0': '',
@@ -40,13 +40,13 @@
         "../vendor/backbone.js",
 
         "../vendor/leaflet.js",
-        "../vendor/wax.leaf.js",
-        "../vendor/wax.g.js",
+        "../vendor/wax.cartodb.js",
         "../vendor/GeoJSON.js", //geojson gmaps lib
 
         "../vendor/jscrollpane.js",
         "../vendor/mousewheel.js",
         "../vendor/mwheelIntent.js",
+        "../vendor/spin.js",
 
         'core/decorator.js',
         'core/config.js',
@@ -55,7 +55,6 @@
         'core/template.js',
         'core/model.js',
         'core/view.js',
-        'core/sql.js',
 
         'geo/geocoder.js',
         'geo/geometry.js',

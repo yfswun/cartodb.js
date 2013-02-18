@@ -1,4 +1,4 @@
-/* wax - 7.0.0dev10 - v6.0.4-130-g0ab39a0 */
+/* wax - 7.0.0dev10 - v6.0.4-132-g86c33ce */
 
 
 !function (name, context, definition) {
@@ -2025,7 +2025,487 @@ var Mustache = (typeof module !== "undefined" && module.exports) || {};
   * https://github.com/ded/reqwest
   * license MIT
   */
-!function(e,t){typeof module!="undefined"?module.exports=t():typeof define=="function"&&define.amd?define(t):this[e]=t()}("reqwest",function(){function handleReadyState(e,t,n){return function(){e&&e[readyState]==4&&(twoHundo.test(e.status)?t(e):n(e))}}function setHeaders(e,t){var n=t.headers||{},r;n.Accept=n.Accept||defaultHeaders.accept[t.type]||defaultHeaders.accept["*"],!t.crossOrigin&&!n[requestedWith]&&(n[requestedWith]=defaultHeaders.requestedWith),n[contentType]||(n[contentType]=t.contentType||defaultHeaders.contentType);for(r in n)n.hasOwnProperty(r)&&e.setRequestHeader(r,n[r])}function setCredentials(e,t){typeof t.withCredentials!="undefined"&&typeof e.withCredentials!="undefined"&&(e.withCredentials=!!t.withCredentials)}function generalCallback(e){lastValue=e}function urlappend(e,t){return e+(/\?/.test(e)?"&":"?")+t}function handleJsonp(e,t,n,r){var i=uniqid++,s=e.jsonpCallback||"callback",o=e.jsonpCallbackName||reqwest.getcallbackPrefix(i),u=new RegExp("((^|\\?|&)"+s+")=([^&]+)"),a=r.match(u),f=doc.createElement("script"),l=0,c=navigator.userAgent.indexOf("MSIE 10.0")!==-1;a?a[3]==="?"?r=r.replace(u,"$1="+o):o=a[3]:r=urlappend(r,s+"="+o),win[o]=generalCallback,f.type="text/javascript",f.src=r,f.async=!0,typeof f.onreadystatechange!="undefined"&&!c&&(f.event="onclick",f.htmlFor=f.id="_reqwest_"+i),f.onload=f.onreadystatechange=function(){if(f[readyState]&&f[readyState]!=="complete"&&f[readyState]!=="loaded"||l)return!1;f.onload=f.onreadystatechange=null,f.onclick&&f.onclick(),e.success&&e.success(lastValue),lastValue=undefined,head.removeChild(f),l=1},head.appendChild(f)}function getRequest(e,t,n){var r=(e.method||"GET").toUpperCase(),i=typeof e=="string"?e:e.url,s=e.processData!==!1&&e.data&&typeof e.data!="string"?reqwest.toQueryString(e.data):e.data||null,o;return(e.type=="jsonp"||r=="GET")&&s&&(i=urlappend(i,s),s=null),e.type=="jsonp"?handleJsonp(e,t,n,i):(o=xhr(),o.open(r,i,!0),setHeaders(o,e),setCredentials(o,e),o.onreadystatechange=handleReadyState(o,t,n),e.before&&e.before(o),o.send(s),o)}function Reqwest(e,t){this.o=e,this.fn=t,init.apply(this,arguments)}function setType(e){var t=e.match(/\.(json|jsonp|html|xml)(\?|$)/);return t?t[1]:"js"}function init(o,fn){function complete(e){o.timeout&&clearTimeout(self.timeout),self.timeout=null;while(self._completeHandlers.length>0)self._completeHandlers.shift()(e)}function success(resp){var r=resp.responseText;if(r)switch(type){case"json":try{resp=win.JSON?win.JSON.parse(r):eval("("+r+")")}catch(err){return error(resp,"Could not parse JSON in response",err)}break;case"js":resp=eval(r);break;case"html":resp=r;break;case"xml":resp=resp.responseXML}self._responseArgs.resp=resp,self._fulfilled=!0,fn(resp);while(self._fulfillmentHandlers.length>0)self._fulfillmentHandlers.shift()(resp);complete(resp)}function error(e,t,n){self._responseArgs.resp=e,self._responseArgs.msg=t,self._responseArgs.t=n,self._erred=!0;while(self._errorHandlers.length>0)self._errorHandlers.shift()(e,t,n);complete(e)}this.url=typeof o=="string"?o:o.url,this.timeout=null,this._fulfilled=!1,this._fulfillmentHandlers=[],this._errorHandlers=[],this._completeHandlers=[],this._erred=!1,this._responseArgs={};var self=this,type=o.type||setType(this.url);fn=fn||function(){},o.timeout&&(this.timeout=setTimeout(function(){self.abort()},o.timeout)),o.success&&this._fulfillmentHandlers.push(function(){o.success.apply(o,arguments)}),o.error&&this._errorHandlers.push(function(){o.error.apply(o,arguments)}),o.complete&&this._completeHandlers.push(function(){o.complete.apply(o,arguments)}),this.request=getRequest(o,success,error)}function reqwest(e,t){return new Reqwest(e,t)}function normalize(e){return e?e.replace(/\r?\n/g,"\r\n"):""}function serial(e,t){var n=e.name,r=e.tagName.toLowerCase(),i=function(e){e&&!e.disabled&&t(n,normalize(e.attributes.value&&e.attributes.value.specified?e.value:e.text))};if(e.disabled||!n)return;switch(r){case"input":if(!/reset|button|image|file/i.test(e.type)){var s=/checkbox/i.test(e.type),o=/radio/i.test(e.type),u=e.value;(!s&&!o||e.checked)&&t(n,normalize(s&&u===""?"on":u))}break;case"textarea":t(n,normalize(e.value));break;case"select":if(e.type.toLowerCase()==="select-one")i(e.selectedIndex>=0?e.options[e.selectedIndex]:null);else for(var a=0;e.length&&a<e.length;a++)e.options[a].selected&&i(e.options[a])}}function eachFormElement(){var e=this,t,n,r,i=function(t,n){for(var i=0;i<n.length;i++){var s=t[byTag](n[i]);for(r=0;r<s.length;r++)serial(s[r],e)}};for(n=0;n<arguments.length;n++)t=arguments[n],/input|select|textarea/i.test(t.tagName)&&serial(t,e),i(t,["input","select","textarea"])}function serializeQueryString(){return reqwest.toQueryString(reqwest.serializeArray.apply(null,arguments))}function serializeHash(){var e={};return eachFormElement.apply(function(t,n){t in e?(e[t]&&!isArray(e[t])&&(e[t]=[e[t]]),e[t].push(n)):e[t]=n},arguments),e}var win=window,doc=document,twoHundo=/^20\d$/,byTag="getElementsByTagName",readyState="readyState",contentType="Content-Type",requestedWith="X-Requested-With",head=doc[byTag]("head")[0],uniqid=0,callbackPrefix="reqwest_"+ +(new Date),lastValue,xmlHttpRequest="XMLHttpRequest",isArray=typeof Array.isArray=="function"?Array.isArray:function(e){return e instanceof Array},defaultHeaders={contentType:"application/x-www-form-urlencoded",requestedWith:xmlHttpRequest,accept:{"*":"text/javascript, text/html, application/xml, text/xml, */*",xml:"application/xml, text/xml",html:"text/html",text:"text/plain",json:"application/json, text/javascript",js:"application/javascript, text/javascript"}},xhr=win[xmlHttpRequest]?function(){return new XMLHttpRequest}:function(){return new ActiveXObject("Microsoft.XMLHTTP")};return Reqwest.prototype={abort:function(){this.request.abort()},retry:function(){init.call(this,this.o,this.fn)},then:function(e,t){return this._fulfilled?e(this._responseArgs.resp):this._erred?t(this._responseArgs.resp,this._responseArgs.msg,this._responseArgs.t):(this._fulfillmentHandlers.push(e),this._errorHandlers.push(t)),this},always:function(e){return this._fulfilled||this._erred?e(this._responseArgs.resp):this._completeHandlers.push(e),this},fail:function(e){return this._erred?e(this._responseArgs.resp,this._responseArgs.msg,this._responseArgs.t):this._errorHandlers.push(e),this}},reqwest.serializeArray=function(){var e=[];return eachFormElement.apply(function(t,n){e.push({name:t,value:n})},arguments),e},reqwest.serialize=function(){if(arguments.length===0)return"";var e,t,n=Array.prototype.slice.call(arguments,0);return e=n.pop(),e&&e.nodeType&&n.push(e)&&(e=null),e&&(e=e.type),e=="map"?t=serializeHash:e=="array"?t=reqwest.serializeArray:t=serializeQueryString,t.apply(null,n)},reqwest.toQueryString=function(e){var t="",n,r=encodeURIComponent,i=function(e,n){t+=r(e)+"="+r(n)+"&"};if(isArray(e))for(n=0;e&&n<e.length;n++)i(e[n].name,e[n].value);else for(var s in e){if(!Object.hasOwnProperty.call(e,s))continue;var o=e[s];if(isArray(o))for(n=0;n<o.length;n++)i(s,o[n]);else i(s,e[s])}return t.replace(/&$/,"").replace(/%20/g,"+")},reqwest.getcallbackPrefix=function(e){return callbackPrefix},reqwest.compat=function(e,t){return e&&(e.type&&(e.method=e.type)&&delete e.type,e.dataType&&(e.type=e.dataType),e.jsonpCallback&&(e.jsonpCallbackName=e.jsonpCallback)&&delete e.jsonpCallback,e.jsonp&&(e.jsonpCallback=e.jsonp)),new Reqwest(e,t)},reqwest});wax = wax || {};
+(function (name, context, definition) {
+  if (typeof module != 'undefined' && module.exports) module.exports = definition()
+  else if (typeof define == 'function' && define.amd) define(definition)
+  else context[name] = definition()
+})('reqwest', this, function () {
+
+  var win = window
+    , doc = document
+    , twoHundo = /^20\d$/
+    , byTag = 'getElementsByTagName'
+    , readyState = 'readyState'
+    , contentType = 'Content-Type'
+    , requestedWith = 'X-Requested-With'
+    , head = doc[byTag]('head')[0]
+    , uniqid = 0
+    , callbackPrefix = 'reqwest_' + (+new Date())
+    , lastValue // data stored by the most recent JSONP callback
+    , xmlHttpRequest = 'XMLHttpRequest'
+    , noop = function () {}
+
+  var isArray = typeof Array.isArray == 'function' ? Array.isArray : function (a) {
+    return a instanceof Array
+  }
+  var defaultHeaders = {
+      contentType: 'application/x-www-form-urlencoded'
+    , requestedWith: xmlHttpRequest
+    , accept: {
+        '*':  'text/javascript, text/html, application/xml, text/xml, */*'
+      , xml:  'application/xml, text/xml'
+      , html: 'text/html'
+      , text: 'text/plain'
+      , json: 'application/json, text/javascript'
+      , js:   'application/javascript, text/javascript'
+      }
+    }
+  var xhr = win[xmlHttpRequest] ?
+    function () {
+      return new XMLHttpRequest()
+    } :
+    function () {
+      return new ActiveXObject('Microsoft.XMLHTTP')
+    }
+
+  function handleReadyState(o, success, error) {
+    return function () {
+      if (o && o[readyState] == 4) {
+        o.onreadystatechange = noop;
+        if (twoHundo.test(o.status)) {
+          success(o)
+        } else {
+          error(o)
+        }
+      }
+    }
+  }
+
+  function setHeaders(http, o) {
+    var headers = o.headers || {}, h
+    headers.Accept = headers.Accept || defaultHeaders.accept[o.type] || defaultHeaders.accept['*']
+    // breaks cross-origin requests with legacy browsers
+    if (!o.crossOrigin && !headers[requestedWith]) headers[requestedWith] = defaultHeaders.requestedWith
+    if (!headers[contentType]) headers[contentType] = o.contentType || defaultHeaders.contentType
+    for (h in headers) {
+      headers.hasOwnProperty(h) && http.setRequestHeader(h, headers[h])
+    }
+  }
+
+  function setCredentials(http, o) {
+    if (typeof o.withCredentials !== "undefined" && typeof http.withCredentials !== "undefined") {
+      http.withCredentials = !!o.withCredentials
+    }
+  }
+
+  function generalCallback(data) {
+    lastValue = data
+  }
+
+  function urlappend(url, s) {
+    return url + (/\?/.test(url) ? '&' : '?') + s
+  }
+
+  function handleJsonp(o, fn, err, url) {
+    var reqId = uniqid++
+      , cbkey = o.jsonpCallback || 'callback' // the 'callback' key
+      , cbval = o.jsonpCallbackName || reqwest.getcallbackPrefix(reqId)
+      // , cbval = o.jsonpCallbackName || ('reqwest_' + reqId) // the 'callback' value
+      , cbreg = new RegExp('((^|\\?|&)' + cbkey + ')=([^&]+)')
+      , match = url.match(cbreg)
+      , script = doc.createElement('script')
+      , loaded = 0
+      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
+      , isIE9 = navigator.userAgent.indexOf('MSIE 9') !== -1
+
+    if (match) {
+      if (match[3] === '?') {
+        url = url.replace(cbreg, '$1=' + cbval) // wildcard callback func name
+      } else {
+        cbval = match[3] // provided callback func name
+      }
+    } else {
+      url = urlappend(url, cbkey + '=' + cbval) // no callback details, add 'em
+    }
+
+    win[cbval] = generalCallback
+
+    script.type = 'text/javascript'
+    script.src = url
+    script.async = true
+    if (typeof script.onreadystatechange !== 'undefined' && !isIE10 && !isIE9) {
+      // need this for IE due to out-of-order onreadystatechange(), binding script
+      // execution to an event listener gives us control over when the script
+      // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
+      //
+      // if this hack is used in IE10 jsonp callback are never called
+      script.event = 'onclick'
+      script.htmlFor = script.id = '_reqwest_' + reqId
+    }
+
+    script.onload = script.onreadystatechange = function () {
+      if ((script[readyState] && script[readyState] !== 'complete' && script[readyState] !== 'loaded') || loaded) {
+        return false
+      }
+      script.onload = script.onreadystatechange = null
+      script.onclick && script.onclick()
+      // Call the user callback with the last value stored and clean up values and scripts.
+      o.success && o.success(lastValue)
+      lastValue = undefined
+      head.removeChild(script)
+      loaded = 1
+    }
+
+    // Add the script to the DOM head
+    head.appendChild(script)
+  }
+
+  function getRequest(o, fn, err) {
+    var method = (o.method || 'GET').toUpperCase()
+      , url = typeof o === 'string' ? o : o.url
+      // convert non-string objects to query-string form unless o.processData is false
+      , data = (o.processData !== false && o.data && typeof o.data !== 'string')
+        ? reqwest.toQueryString(o.data)
+        : (o.data || null)
+      , http
+
+    // if we're working on a GET request and we have data then we should append
+    // query string to end of URL and not post data
+    if ((o.type == 'jsonp' || method == 'GET') && data) {
+      url = urlappend(url, data)
+      data = null
+    }
+
+    if (o.type == 'jsonp') return handleJsonp(o, fn, err, url)
+
+    http = xhr()
+    http.open(method, url, true)
+    setHeaders(http, o)
+    setCredentials(http, o)
+    http.onreadystatechange = handleReadyState(http, fn, err)
+    o.before && o.before(http)
+    http.send(data)
+    return http
+  }
+
+  function Reqwest(o, fn) {
+    this.o = o
+    this.fn = fn
+
+    init.apply(this, arguments)
+  }
+
+  function setType(url) {
+    var m = url.match(/\.(json|jsonp|html|xml)(\?|$)/)
+    return m ? m[1] : 'js'
+  }
+
+  function init(o, fn) {
+
+    this.url = typeof o == 'string' ? o : o.url
+    this.timeout = null
+
+    // whether request has been fulfilled for purpose
+    // of tracking the Promises
+    this._fulfilled = false
+    // success handlers
+    this._fulfillmentHandlers = []
+    // error handlers
+    this._errorHandlers = []
+    // complete (both success and fail) handlers
+    this._completeHandlers = []
+    this._erred = false
+    this._responseArgs = {}
+
+    var self = this
+      , type = o.type || setType(this.url)
+
+    fn = fn || function () {}
+
+    if (o.timeout) {
+      this.timeout = setTimeout(function () {
+        self.abort()
+      }, o.timeout)
+    }
+
+    if (o.success) {
+      this._fulfillmentHandlers.push(function () {
+        o.success.apply(o, arguments)
+      })
+    }
+
+    if (o.error) {
+      this._errorHandlers.push(function () {
+        o.error.apply(o, arguments)
+      })
+    }
+
+    if (o.complete) {
+      this._completeHandlers.push(function () {
+        o.complete.apply(o, arguments)
+      })
+    }
+
+    function complete(resp) {
+      o.timeout && clearTimeout(self.timeout)
+      self.timeout = null
+      while (self._completeHandlers.length > 0) {
+        self._completeHandlers.shift()(resp)
+      }
+    }
+
+    function success(resp) {
+      var r = resp.responseText
+      if (r) {
+        switch (type) {
+        case 'json':
+          try {
+            resp = win.JSON ? win.JSON.parse(r) : eval('(' + r + ')')
+          } catch (err) {
+            return error(resp, 'Could not parse JSON in response', err)
+          }
+          break;
+        case 'js':
+          resp = eval(r)
+          break;
+        case 'html':
+          resp = r
+          break;
+        case 'xml':
+          resp = resp.responseXML;
+          break;
+        }
+      }
+
+      self._responseArgs.resp = resp
+      self._fulfilled = true
+      fn(resp)
+      while (self._fulfillmentHandlers.length > 0) {
+        self._fulfillmentHandlers.shift()(resp)
+      }
+
+      complete(resp)
+    }
+
+    function error(resp, msg, t) {
+      self._responseArgs.resp = resp
+      self._responseArgs.msg = msg
+      self._responseArgs.t = t
+      self._erred = true
+      while (self._errorHandlers.length > 0) {
+        self._errorHandlers.shift()(resp, msg, t)
+      }
+      complete(resp)
+    }
+
+    this.request = getRequest(o, success, error)
+  }
+
+  Reqwest.prototype = {
+    abort: function () {
+      this.request.abort()
+    }
+
+  , retry: function () {
+      init.call(this, this.o, this.fn)
+    }
+
+    /**
+     * Small deviation from the Promises A CommonJs specification
+     * http://wiki.commonjs.org/wiki/Promises/A
+     */
+
+    /**
+     * `then` will execute upon successful requests
+     */
+  , then: function (success, fail) {
+      if (this._fulfilled) {
+        success(this._responseArgs.resp)
+      } else if (this._erred) {
+        fail(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._fulfillmentHandlers.push(success)
+        this._errorHandlers.push(fail)
+      }
+      return this
+    }
+
+    /**
+     * `always` will execute whether the request succeeds or fails
+     */
+  , always: function (fn) {
+      if (this._fulfilled || this._erred) {
+        fn(this._responseArgs.resp)
+      } else {
+        this._completeHandlers.push(fn)
+      }
+      return this
+    }
+
+    /**
+     * `fail` will execute when the request fails
+     */
+  , fail: function (fn) {
+      if (this._erred) {
+        fn(this._responseArgs.resp, this._responseArgs.msg, this._responseArgs.t)
+      } else {
+        this._errorHandlers.push(fn)
+      }
+      return this
+    }
+  }
+
+  function reqwest(o, fn) {
+    return new Reqwest(o, fn)
+  }
+
+  // normalize newline variants according to spec -> CRLF
+  function normalize(s) {
+    return s ? s.replace(/\r?\n/g, '\r\n') : ''
+  }
+
+  function serial(el, cb) {
+    var n = el.name
+      , t = el.tagName.toLowerCase()
+      , optCb = function (o) {
+          // IE gives value="" even where there is no value attribute
+          // 'specified' ref: http://www.w3.org/TR/DOM-Level-3-Core/core.html#ID-862529273
+          if (o && !o.disabled)
+            cb(n, normalize(o.attributes.value && o.attributes.value.specified ? o.value : o.text))
+        }
+
+    // don't serialize elements that are disabled or without a name
+    if (el.disabled || !n) return;
+
+    switch (t) {
+    case 'input':
+      if (!/reset|button|image|file/i.test(el.type)) {
+        var ch = /checkbox/i.test(el.type)
+          , ra = /radio/i.test(el.type)
+          , val = el.value;
+        // WebKit gives us "" instead of "on" if a checkbox has no value, so correct it here
+        (!(ch || ra) || el.checked) && cb(n, normalize(ch && val === '' ? 'on' : val))
+      }
+      break;
+    case 'textarea':
+      cb(n, normalize(el.value))
+      break;
+    case 'select':
+      if (el.type.toLowerCase() === 'select-one') {
+        optCb(el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null)
+      } else {
+        for (var i = 0; el.length && i < el.length; i++) {
+          el.options[i].selected && optCb(el.options[i])
+        }
+      }
+      break;
+    }
+  }
+
+  // collect up all form elements found from the passed argument elements all
+  // the way down to child elements; pass a '<form>' or form fields.
+  // called with 'this'=callback to use for serial() on each element
+  function eachFormElement() {
+    var cb = this
+      , e, i, j
+      , serializeSubtags = function (e, tags) {
+        for (var i = 0; i < tags.length; i++) {
+          var fa = e[byTag](tags[i])
+          for (j = 0; j < fa.length; j++) serial(fa[j], cb)
+        }
+      }
+
+    for (i = 0; i < arguments.length; i++) {
+      e = arguments[i]
+      if (/input|select|textarea/i.test(e.tagName)) serial(e, cb)
+      serializeSubtags(e, [ 'input', 'select', 'textarea' ])
+    }
+  }
+
+  // standard query string style serialization
+  function serializeQueryString() {
+    return reqwest.toQueryString(reqwest.serializeArray.apply(null, arguments))
+  }
+
+  // { 'name': 'value', ... } style serialization
+  function serializeHash() {
+    var hash = {}
+    eachFormElement.apply(function (name, value) {
+      if (name in hash) {
+        hash[name] && !isArray(hash[name]) && (hash[name] = [hash[name]])
+        hash[name].push(value)
+      } else hash[name] = value
+    }, arguments)
+    return hash
+  }
+
+  // [ { name: 'name', value: 'value' }, ... ] style serialization
+  reqwest.serializeArray = function () {
+    var arr = []
+    eachFormElement.apply(function (name, value) {
+      arr.push({name: name, value: value})
+    }, arguments)
+    return arr
+  }
+
+  reqwest.serialize = function () {
+    if (arguments.length === 0) return ''
+    var opt, fn
+      , args = Array.prototype.slice.call(arguments, 0)
+
+    opt = args.pop()
+    opt && opt.nodeType && args.push(opt) && (opt = null)
+    opt && (opt = opt.type)
+
+    if (opt == 'map') fn = serializeHash
+    else if (opt == 'array') fn = reqwest.serializeArray
+    else fn = serializeQueryString
+
+    return fn.apply(null, args)
+  }
+
+  reqwest.toQueryString = function (o) {
+    var qs = '', i
+      , enc = encodeURIComponent
+      , push = function (k, v) {
+          qs += enc(k) + '=' + enc(v) + '&'
+        }
+
+    if (isArray(o)) {
+      for (i = 0; o && i < o.length; i++) push(o[i].name, o[i].value)
+    } else {
+      for (var k in o) {
+        if (!Object.hasOwnProperty.call(o, k)) continue;
+        var v = o[k]
+        if (isArray(v)) {
+          for (i = 0; i < v.length; i++) push(k, v[i])
+        } else push(k, o[k])
+      }
+    }
+
+    // spaces should be + according to spec
+    return qs.replace(/&$/, '').replace(/%20/g, '+')
+  }
+
+  reqwest.getcallbackPrefix = function (reqId) {
+    return callbackPrefix
+  }
+
+  // jQuery and Zepto compatibility, differences can be remapped here so you can call
+  // .ajax.compat(options, callback)
+  reqwest.compat = function (o, fn) {
+    if (o) {
+      o.type && (o.method = o.type) && delete o.type
+      o.dataType && (o.type = o.dataType)
+      o.jsonpCallback && (o.jsonpCallbackName = o.jsonpCallback) && delete o.jsonpCallback
+      o.jsonp && (o.jsonpCallback = o.jsonp)
+    }
+    return new Reqwest(o, fn)
+  }
+
+  return reqwest
+});
+;wax = wax || {};
 
 // Attribution
 // -----------
@@ -2682,45 +3162,6 @@ wax.interaction = function() {
 
     return interaction;
 };
-// Wax Legend
-// ----------
-
-// Wax header
-var wax = wax || {};
-
-wax.legend = function() {
-    var element,
-        legend = {},
-        container;
-
-    legend.element = function() {
-        return container;
-    };
-
-    legend.content = function(content) {
-        if (!arguments.length) return element.innerHTML;
-
-        element.innerHTML = wax.u.sanitize(content);
-        element.style.display = 'block';
-        if (element.innerHTML === '') {
-            element.style.display = 'none';
-        }
-
-        return legend;
-    };
-
-    legend.add = function() {
-        container = document.createElement('div');
-        container.className = 'map-legends wax-legends';
-
-        element = container.appendChild(document.createElement('div'));
-        element.className = 'map-legend wax-legend';
-        element.style.display = 'none';
-        return legend;
-    };
-
-    return legend.add();
-};
 var wax = wax || {};
 
 wax.location = function() {
@@ -2747,119 +3188,6 @@ wax.location = function() {
     return t;
 
 };
-var wax = wax || {};
-wax.movetip = {};
-
-wax.movetip = function() {
-    var popped = false,
-        t = {},
-        _tooltipOffset,
-        _contextOffset,
-        tooltip,
-        parent;
-
-    function moveTooltip(e) {
-       var eo = wax.u.eventoffset(e);
-       // faux-positioning
-       if ((_tooltipOffset.height + eo.y) >
-           (_contextOffset.top + _contextOffset.height) &&
-           (_contextOffset.height > _tooltipOffset.height)) {
-           eo.y -= _tooltipOffset.height;
-           tooltip.className += ' flip-y';
-       }
-
-       // faux-positioning
-       if ((_tooltipOffset.width + eo.x) >
-           (_contextOffset.left + _contextOffset.width)) {
-           eo.x -= _tooltipOffset.width;
-           tooltip.className += ' flip-x';
-       }
-
-       tooltip.style.left = eo.x + 'px';
-       tooltip.style.top = eo.y + 'px';
-    }
-
-    // Get the active tooltip for a layer or create a new one if no tooltip exists.
-    // Hide any tooltips on layers underneath this one.
-    function getTooltip(feature) {
-        var tooltip = document.createElement('div');
-        tooltip.className = 'map-tooltip map-tooltip-0';
-        tooltip.innerHTML = feature;
-        return tooltip;
-    }
-
-    // Hide a given tooltip.
-    function hide() {
-        if (tooltip) {
-          tooltip.parentNode.removeChild(tooltip);
-          tooltip = null;
-        }
-    }
-
-    function on(o) {
-        var content;
-        if (popped) return;
-        if ((o.e.type === 'mousemove' || !o.e.type)) {
-            content = o.formatter({ format: 'teaser' }, o.data);
-            if (!content) return;
-            hide();
-            parent.style.cursor = 'pointer';
-            tooltip = document.body.appendChild(getTooltip(content));
-        } else {
-            content = o.formatter({ format: 'teaser' }, o.data);
-            if (!content) return;
-            hide();
-            var tt = document.body.appendChild(getTooltip(content));
-            tt.className += ' map-popup';
-
-            var close = tt.appendChild(document.createElement('a'));
-            close.href = '#close';
-            close.className = 'close';
-            close.innerHTML = 'Close';
-
-            popped = true;
-
-            tooltip = tt;
-
-            _tooltipOffset = wax.u.offset(tooltip);
-            _contextOffset = wax.u.offset(parent);
-            moveTooltip(o.e);
-
-            bean.add(close, 'click touchend', function closeClick(e) {
-                e.stop();
-                hide();
-                popped = false;
-            });
-        }
-        if (tooltip) {
-          _tooltipOffset = wax.u.offset(tooltip);
-          _contextOffset = wax.u.offset(parent);
-          moveTooltip(o.e);
-        }
-
-    }
-
-    function off() {
-        parent.style.cursor = 'default';
-        if (!popped) hide();
-    }
-
-    t.parent = function(x) {
-        if (!arguments.length) return parent;
-        parent = x;
-        return t;
-    };
-
-    t.events = function() {
-        return {
-            on: on,
-            off: off
-        };
-    };
-
-    return t;
-};
-
 // Wax GridUtil
 // ------------
 
@@ -2939,125 +3267,6 @@ wax.tilejson = function(url, callback) {
         success: callback,
         error: callback
     });
-};
-var wax = wax || {};
-wax.tooltip = {};
-
-wax.tooltip = function() {
-    var popped = false,
-        animate = false,
-        t = {},
-        tooltips = [],
-        _currentContent,
-        transitionEvent,
-        parent;
-
-    if (document.body.style['-webkit-transition'] !== undefined) {
-        transitionEvent = 'webkitTransitionEnd';
-    } else if (document.body.style.MozTransition !== undefined) {
-        transitionEvent = 'transitionend';
-    }
-
-    // Get the active tooltip for a layer or create a new one if no tooltip exists.
-    // Hide any tooltips on layers underneath this one.
-    function getTooltip(feature) {
-        var tooltip = document.createElement('div');
-        tooltip.className = 'map-tooltip map-tooltip-0 wax-tooltip';
-        tooltip.innerHTML = feature;
-        return tooltip;
-    }
-
-    function remove() {
-        if (this.parentNode) this.parentNode.removeChild(this);
-    }
-
-    // Hide a given tooltip.
-    function hide() {
-        var _ct;
-        while (_ct = tooltips.pop()) {
-            if (animate && transitionEvent) {
-                // This code assumes that transform-supporting browsers
-                // also support proper events. IE9 does both.
-                  bean.add(_ct, transitionEvent, remove);
-                  _ct.className += ' map-fade';
-            } else {
-                if (_ct.parentNode) _ct.parentNode.removeChild(_ct);
-            }
-        }
-    }
-
-    function on(o) {
-        var content;
-        if (o.e.type === 'mousemove' || !o.e.type) {
-            if (!popped) {
-                content = o.content || o.formatter({ format: 'teaser' }, o.data);
-                if (!content || content == _currentContent) return;
-                hide();
-                parent.style.cursor = 'pointer';
-                tooltips.push(parent.appendChild(getTooltip(content)));
-                _currentContent = content;
-            }
-        } else {
-            content = o.content || o.formatter({ format: 'full' }, o.data);
-            if (!content) {
-              if (o.e.type && o.e.type.match(/touch/)) {
-                // fallback possible
-                content = o.content || o.formatter({ format: 'teaser' }, o.data);
-              }
-              // but if that fails, return just the same.
-              if (!content) return;
-            }
-            hide();
-            parent.style.cursor = 'pointer';
-            var tt = parent.appendChild(getTooltip(content));
-            tt.className += ' map-popup wax-popup';
-
-            var close = tt.appendChild(document.createElement('a'));
-            close.href = '#close';
-            close.className = 'close';
-            close.innerHTML = 'Close';
-            popped = true;
-
-            tooltips.push(tt);
-
-            bean.add(close, 'touchstart mousedown', function(e) {
-                e.stop();
-            });
-
-            bean.add(close, 'click touchend', function closeClick(e) {
-                e.stop();
-                hide();
-                popped = false;
-            });
-        }
-    }
-
-    function off() {
-        parent.style.cursor = 'default';
-        _currentContent = null;
-        if (!popped) hide();
-    }
-
-    t.parent = function(x) {
-        if (!arguments.length) return parent;
-        parent = x;
-        return t;
-    };
-
-    t.animate = function(x) {
-        if (!arguments.length) return animate;
-        animate = x;
-        return t;
-    };
-
-    t.events = function() {
-        return {
-            on: on,
-            off: off
-        };
-    };
-
-    return t;
 };
 var wax = wax || {};
 
@@ -3229,6 +3438,112 @@ wax.u = {
     }
 };
 wax = wax || {};
+wax.leaf = wax.leaf || {};
+
+wax.leaf.hash = function(map) {
+    return wax.hash({
+        getCenterZoom: function () {
+            var center = map.getCenter(),
+                zoom = map.getZoom(),
+                precision = Math.max(
+                    0,
+                    Math.ceil(Math.log(zoom) / Math.LN2));
+
+            return [
+                zoom,
+                center.lat.toFixed(precision),
+                center.lng.toFixed(precision)
+            ].join('/');
+        },
+
+        setCenterZoom: function (args) {
+            map.setView(new L.LatLng(args[1], args[2]), args[0]);
+        },
+
+        bindChange: function (fn) {
+            map.on('moveend', fn);
+        },
+
+        unbindChange: function (fn) {
+            map.off('moveend', fn);
+        }
+    });
+};
+wax = wax || {};
+wax.leaf = wax.leaf || {};
+
+wax.leaf.interaction = function() {
+    var dirty = false, _grid, map;
+
+    function setdirty() { dirty = true; }
+
+    function grid() {
+        // TODO: don't build for tiles outside of viewport
+        // Touch interaction leads to intermediate
+        //var zoomLayer = map.createOrGetLayer(Math.round(map.getZoom())); //?what is this doing?
+        // Calculate a tile grid and cache it, by using the `.tiles`
+        // element on this map.
+        if (!dirty && _grid) {
+            return _grid;
+        } else {
+            return (_grid = (function(layers) {
+                var o = [];
+                for (var layerId in layers) {
+                    // This only supports tiled layers
+                    if (layers[layerId]._tiles) {
+                        for (var tile in layers[layerId]._tiles) {
+                            var _tile = layers[layerId]._tiles[tile];
+                            // avoid adding tiles without src, grid url can't be found for them
+                            if(_tile.src) {
+                              var offset = wax.u.offset(_tile);
+                              o.push([offset.top, offset.left, _tile]);
+                            }
+                        }
+                    }
+                }
+                return o;
+            })(map._layers));
+        }
+    }
+
+    function attach(x) {
+        if (!arguments.length) return map;
+        map = x;
+        var l = ['moveend'];
+        for (var i = 0; i < l.length; i++) {
+            map.on(l[i], setdirty);
+        }
+    }
+
+    function detach(x) {
+        if (!arguments.length) return map;
+        map = x;
+        var l = ['moveend'];
+        for (var i = 0; i < l.length; i++) {
+            map.off(l[i], setdirty);
+        }
+    }
+
+    return wax.interaction()
+        .attach(attach)
+        .detach(detach)
+        .parent(function() {
+          return map._container;
+        })
+        .grid(grid);
+};
+wax = wax || {};
+wax.leaf = wax.leaf || {};
+
+wax.leaf.connector = L.TileLayer.extend({
+    initialize: function(options) {
+        options = options || {};
+        options.minZoom = options.minzoom || 0;
+        options.maxZoom = options.maxzoom || 22;
+        L.TileLayer.prototype.initialize.call(this, options.tiles[0], options);
+    }
+});
+wax = wax || {};
 wax.g = wax.g || {};
 
 // Attribution
@@ -3381,34 +3696,6 @@ wax.g.interaction = function() {
           return map.getDiv();
         })
         .grid(grid);
-};
-wax = wax || {};
-wax.g = wax.g || {};
-
-// Legend Control
-// --------------
-// Adds legends to a google Map object.
-wax.g.legend = function(map, tilejson) {
-    tilejson = tilejson || {};
-    var l, // parent legend
-        legend = {};
-
-    legend.add = function() {
-        l = wax.legend()
-            .content(tilejson.legend || '');
-        return legend;
-    };
-
-    legend.element = function() {
-        return l.element();
-    };
-
-    legend.appendTo = function(elem) {
-        wax.u.$(elem).appendChild(l.element());
-        return legend;
-    };
-
-    return legend.add();
 };
 // Wax for Google Maps API v3
 // --------------------------

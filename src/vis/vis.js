@@ -116,17 +116,12 @@ var Vis = cdb.core.View.extend({
     var self = this;
     if(typeof(data) === 'string') {
       var url = data;
-      reqwest({
-          url: url + (~url.indexOf('?') ? '&' : '?') + 'callback=vizjson',
-          type: 'jsonp',
-          jsonpCallback: 'callback',
-          success: function(data) {
-            if(data) {
-              self.load(data, options);
-            } else {
-              self.trigger('error', 'error fetching viz.json file');
-            }
-          }
+      cdb.vis.Loader.get(url, function(data) {
+        if(data) {
+          self.load(data, options);
+        } else {
+          self.trigger('error', 'error fetching viz.json file');
+        }
       });
       return this;
     }
@@ -140,8 +135,10 @@ var Vis = cdb.core.View.extend({
       this.https = data.https;
     }
 
+
     if(options) {
       this._applyOptions(data, options);
+      this.cartodb_logo = options.cartodb_logo;
     }
 
     // map
@@ -178,6 +175,7 @@ var Vis = cdb.core.View.extend({
     this.updated_at = data.updated_at || new Date().getTime();
 
     var div = $('<div>').css({
+      position: 'relative',
       width: '100%',
       height: '100%'
     });
@@ -364,14 +362,13 @@ var Vis = cdb.core.View.extend({
 
   // Set map top position taking into account header height
   setMapPosition: function() {
-    var header_h = this.$el.parent().find(".header").outerHeight();
-  
+    var header_h = this.$el.find(".header:not(.cartodb-popup)").outerHeight();
+
     this.$el
       .find("div.map-wrapper")
       .css("top", header_h);
 
     this.mapView.invalidateSize();
-
   },
 
   createLayer: function(layerData, opts) {
@@ -410,11 +407,15 @@ var Vis = cdb.core.View.extend({
     layerView.bind(eventType, function(e, latlng, pos, data) {
         var cartodb_id = data.cartodb_id
         var fields = infowindowFields.fields;
+
+
+        // Send request
         sql.execute("select {{fields}} from {{table_name}} where cartodb_id = {{cartodb_id }}", {
           fields: _.pluck(fields, 'name').join(','),
           cartodb_id: cartodb_id,
           table_name: model.get('table_name')
-        }).done(function(interact_data) {
+        })
+        .done(function(interact_data) {
           if(interact_data.rows.length == 0 ) return;
           interact_data = interact_data.rows[0];
           if(infowindowFields) {
@@ -422,23 +423,40 @@ var Vis = cdb.core.View.extend({
             var fields = infowindowFields.fields;
             for(var j = 0; j < fields.length; ++j) {
               var f = fields[j];
+              if(interact_data[f.name] != undefined) {
+                render_fields.push({
+                  title: f.title ? f.name: null,
+                  value: interact_data[f.name],
+                  index: j ? j:null // mustache does not recognize 0 as false :( 
+                });
+              }
+            }
+            // manage when there is no data to render
+            if(render_fields.length === 0) {
               render_fields.push({
-                title: f.title ? f.name: null,
-                value: interact_data[f.name],
-                index: j ? j:null // mustache does not recognize 0 as false :( 
+                title: null,
+                value: 'No data available',
+                index: j ? j:null, // mustache does not recognize 0 as false :( 
+                type: 'empty'
               });
             }
             content = render_fields;
           }
+
           infowindow.model.set({ 
             content:  { 
               fields: content, 
               data: interact_data
             } 
-          });
-          infowindow.setLatLng(latlng).showInfowindow();
+          })
+          infowindow.adjustPan();
         });
 
+        // Show infowindow with loading state
+        infowindow
+          .setLatLng(latlng)
+          .setLoading()
+          .showInfowindow();
     });
 
     layerView.bind('featureOver', function(e, latlon, pxPos, data) {
