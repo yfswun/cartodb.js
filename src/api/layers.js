@@ -94,8 +94,9 @@
         layerData = visData.layers[1];
         // add the timestamp to options
         layerData.options.extra_params = layerData.options.extra_params || {};
-        layerData.options.extra_params.updated_at = visData.updated_at;
-        delete layerData.options.cache_buster;
+        //layerData.options.extra_params.updated_at = visData.updated_at;
+        layerData.options.extra_params.cache_buster = visData.updated_at;
+        //delete layerData.options.cache_buster;
       } else {
         layerData = visData;
       }
@@ -124,7 +125,8 @@
 
       options = options || {};
       options = _.defaults(options, {
-          infowindow: true
+        infowindow: true,
+        https: false
       })
 
       // create a dummy viz
@@ -140,6 +142,7 @@
         });
 
         viz.updated_at = visData.updated_at;
+        viz.https = options.https;
       }
 
       layerView = viz.createLayer(layerData, { no_base_layer: true });

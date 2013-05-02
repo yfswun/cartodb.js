@@ -89,46 +89,58 @@ describe("cdb.geo.ui.infowindow", function() {
     });
 
     it("should convert value to string when it is a number", function() {
-      model.set('content', { fields: [{ title: 'jamon1', value: 0}, { title: 'jamon2', value: 1}] }, {silent: true});
+      model.set({
+        content: {
+          fields: [{
+              title: 'jamon1', value: 0, index:0
+            }, {
+              title: 'jamon2', value: 1, index:1
+            }]
+        },
+        template_name: 'jaja'
+      }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
 
       expect(render_fields[0].value).toEqual("0");
       expect(render_fields[1].value).toEqual("1");
     });
 
-    it("should convert value to null when it is undefined", function() {
-      model.set('content', { fields: [{ title: 'jamon', value: undefined}] }, {silent: true});
+    it("should convert value to '' when it is undefined", function() {
+      model.set({
+        content: { fields: [{ title: 'jamon', value: undefined}] },
+        template_name: 'jaja'
+      }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
-      expect(render_fields[0].value).toEqual(null);
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
+      expect(render_fields[0].value).toEqual('');
     });
 
-    it("should convert value to null when it is null", function() {
+    it("should convert value to '' when it is null", function() {
       model.set('content', { fields: [{ title: 'jamon', value: null}] }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
-      expect(render_fields[0].value).toEqual(null);
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
+      expect(render_fields[0].value).toEqual('');
     });
 
-    it("should convert value to null when it is empty", function() {
+    it("shouldn't convert the value if it is empty", function() {
       model.set('content', { fields: [{ title: 'jamon', value: ''}] }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
-      expect(render_fields[0].value).toEqual(null);
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
+      expect(render_fields[0].value).toEqual('');
     });
 
     it("should leave a string as it is", function() {
       model.set('content', { fields: [{ title: 'jamon', value: "jamon is testing"}] }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
       expect(render_fields[0].value).toEqual("jamon is testing");
     });
 
     it("should convert value to string when it is a boolean", function() {
       model.set('content', { fields: [{ title: 'jamon1', value: false}, { title: 'jamon2', value: true}] }, {silent: true});
 
-      var render_fields = view._fieldsToString(model.attributes).content.fields;
+      var render_fields = view._fieldsToString(model.attributes.content.fields, model.attributes.template_name);
 
       expect(render_fields[0].value).toEqual("false");
       expect(render_fields[1].value).toEqual("true");
@@ -177,7 +189,7 @@ describe("cdb.geo.ui.infowindow", function() {
         'template': 'jaja',
         'content': {
           fields: [
-            { value: 'Loading content...', index: null, title: null, loading: true}
+            { value: 'Loading content...', index: null, title: null, type: 'loading'}
           ]
         }
       });
@@ -189,7 +201,7 @@ describe("cdb.geo.ui.infowindow", function() {
         'template': 'jaja',
         'content': {
           fields: [
-            { value: 'Loading content...', index: null, title: null, loading: true}
+            { value: 'Loading content...', index: null, title: null, type: 'loading'}
           ]
         }
       });
@@ -213,8 +225,8 @@ describe("cdb.geo.ui.infowindow", function() {
         'template': 'jaja',
         'content': {
           fields: [
-            { value: 'Loading content...', index: null, title: null, loading: true},
-            { value: 'Loading content...', index: null, title: null, loading: true}
+            { value: 'Loading content...', index: null, title: null, type: 'loading'},
+            { value: 'Loading content...', index: null, title: null, type: 'loading'}
           ]
         }
       });
@@ -235,13 +247,13 @@ describe("cdb.geo.ui.infowindow", function() {
       container = $('<div>').css('height', '200px');
 
       fields = [
-        { name: 'test1', position: 1, title: true, value: url },
-        { name: 'test2', position: 2, title: true, value: "b"}
+        { title: 'test1', position: 1, value: url },
+        { title: 'test2', position: 2, value: "b"}
       ];
 
       fieldsWithoutURL = [
-        { name: 'test1', position: 1, title: true, value: "x" },
-        { name: 'test2', position: 2, title: true, value: "b"}
+        { title: 'test1', position: 1, value: "x" },
+        { title: 'test2', position: 2, value: "b"}
       ];
 
       map = new cdb.geo.Map();
