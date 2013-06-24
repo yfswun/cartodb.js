@@ -205,13 +205,19 @@ var Vis = cdb.core.View.extend({
 
     // Add layers
     for(var i in data.layers) {
-      var layerData = data.layers[i];
-      this.loadLayer(layerData);
+      if(data.layers.hasOwnProperty(i)) {
+        var layerData = data.layers[i];
+        if(layerData) {
+          this.loadLayer(layerData);
+        }
+      }
     }
 
     // Create the overlays
     for (var i in data.overlays) {
-      this.addOverlay(data.overlays[i]);
+      if(data.overlays.hasOwnProperty(i)) {
+        this.addOverlay(data.overlays[i]);
+      }
     }
 
     _.defer(function() {
