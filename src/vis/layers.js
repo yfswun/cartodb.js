@@ -75,7 +75,7 @@ var cartoLayer = function(vis, data) {
   } else {
     data.no_cdn = true;
   }
-  data.cartodb_logo = vis.cartodb_logo;
+  data.cartodb_logo = vis.cartodb_logo == undefined ? data.cartodb_logo : vis.cartodb_logo;
 
   return new cdb.geo.CartoDBLayer(data);
 };
