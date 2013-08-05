@@ -365,6 +365,10 @@ var Vis = cdb.core.View.extend({
       }
       if(opt.style) {
         vizjson.layers[1].options.tile_style = opt.style;
+      } else {
+        // if there is not style option just set it to null
+        // in order to not use server style
+        vizjson.layers[1].options.tile_style = null;
       }
 
       vizjson.layers[1].options.no_cdn = opt.no_cdn;
