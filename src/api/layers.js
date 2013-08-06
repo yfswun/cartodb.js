@@ -93,7 +93,7 @@
         }
         layerData = visData.layers[1];
         // don't use server style
-        layerData.tile_style = null;
+        layerData.options.tile_style = null;
         // add the timestamp to options
         layerData.options.extra_params = layerData.options.extra_params || {};
         //layerData.options.extra_params.updated_at = visData.updated_at;
