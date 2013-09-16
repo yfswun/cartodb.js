@@ -45,58 +45,6 @@ vizjson({
                                 "interactivity": "cartodb_id", 
                                 "sql": "select * from wahlen_bund_2009"
                             }, 
-                            "sub": {
-                                "_added": true, 
-                                "_parent": {
-                                    "layers": [
-                                        {
-                                            "options": {
-                                                "cartocss": "#wahlen_by_2013{  polygon-fill: #dedcd0;  line-opacity: 1; polygon-comp-op: multiply; line-width: .5;  line-color: #fff;  polygon-opacity: 0;} ", 
-                                                "cartocss_version": "2.1.0", 
-                                                "interactivity": [
-                                                    "cartodb_id"
-                                                ], 
-                                                "sql": "Select * FROM wahlen_by_2013"
-                                            }, 
-                                            "type": "cartodb"
-                                        }, 
-                                        {
-                                            "options": {
-                                                "cartocss": "#wahlen_by_2013{  polygon-fill: #dedcd0;  line-opacity: 1; line-width: .5;  line-color: #fff;  polygon-opacity: 0.8;}  #wahlen_by_2013 [ electionwinnerpartyname1 = \"csu\"] { polygon-fill: #333333;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"spd\"] { polygon-fill: #de121d;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"gruene\"] { polygon-fill: #159a2f;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"fdp\"] { polygon-fill: #ffb618;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"freie_waehler\"] { polygon-fill: #00a7e7;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"piraten\"] { polygon-fill: #fb7712;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"linke\"] { polygon-fill: #c400b7;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"npd\"] { polygon-fill: #683c11;  polygon-opacity: 0.8;} #wahlen_by_2013 [ electionwinnerpartyname1 = \"sonstige\"] { polygon-fill: #aaa;  polygon-opacity: 0.8;}", 
-                                                "cartocss_version": "2.1.0", 
-                                                "interactivity": [
-                                                    "cartodb_id"
-                                                ], 
-                                                "sql": "Select * FROM wahlen_by_2013"
-                                            }, 
-                                            "type": "cartodb"
-                                        }, 
-                                        {
-                                            "options": {
-                                                "cartocss": "#cities{  marker-fill: #333;  marker-opacity: 0;  marker-allow-overlap: true;  marker-placement: point;  marker-type: ellipse;  marker-width: 5;  marker-line-width: 0.5;  marker-line-color: #fff;  marker-line-opacity: 1;}#cities::labels {  text-name: [name];  text-face-name: \"DejaVu Sans Book\";  text-size: 11;  text-fill: #333;  text-allow-overlap: true;  text-halo-fill: #fff;  text-halo-radius: 1.2;  text-dy: -10;}", 
-                                                "cartocss_version": "2.1.0", 
-                                                "interactivity": [
-                                                    "cartodb_id"
-                                                ], 
-                                                "sql": "select * from cities"
-                                            }, 
-                                            "type": "cartodb"
-                                        }
-                                    ], 
-                                    "stat_tag": "f8515466-04da-11e3-ad81-938373fbfdcf", 
-                                    "version": "1.0.1"
-                                }, 
-                                "_position": 0, 
-                                "infowindow": {
-                                    "fields": [
-                                        {
-                                            "name": "cartodb_id"
-                                        }
-                                    ], 
-                                    "template": "<div class=\"cartodb-popup\">\n  <a href=\"#close\" class=\"cartodb-popup-close-button close\">x</a>\n  <div class=\"cartodb-popup-content-wrapper\">\n    <div class=\"cartodb-popup-content\">\n      {{#content.fields}}\n        {{#title}}<h4>{{title}}</h4>{{/title}}\n        {{#value}}\n          <p {{#type}}class=\"{{ type }}\"{{/type}}>{{{ value }}}</p>\n        {{/value}}\n        {{^value}}\n          <p class=\"empty\">null</p>\n        {{/value}}\n      {{/content.fields}}\n    </div>\n  </div>\n  <div class=\"cartodb-popup-tip-container\"></div>\n</div>\n", 
-                                    "template_name": "table/views/infowindow_light"
-                                }
-                            }
                         }
                     ], 
                     "stat_tag": "f8515466-04da-11e3-ad81-938373fbfdcf", 
