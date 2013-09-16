@@ -5,7 +5,7 @@
 
     var cdb = root.cdb = {};
 
-    cdb.VERSION = '3.1.04';
+    cdb.VERSION = '3.1.04_debounce';
 
     cdb.CARTOCSS_VERSIONS = {
       '2.0.0': '',
@@ -18,6 +18,9 @@
       'http': 'tiles.cartocdn.com',
       'https': 'd3pu9mtm6f0hk5.cloudfront.net'
     };
+
+
+    cdb.DEBOUNCE_TIME = 150;
 
     root.cdb.config = {};
     root.cdb.core = {};

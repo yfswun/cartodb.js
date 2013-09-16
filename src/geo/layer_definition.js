@@ -165,7 +165,7 @@ LayerDefinition.prototype = {
           fn(data, err);
         }
       });
-    }, 4);
+    }, cartodb.DEBOUNCE_TIME);
   },
 
   _requestFinished: function() {
