@@ -445,7 +445,7 @@ var Vis = cdb.core.View.extend({
     return this.mapView.createLayer(layerModel);
   },
 
-  _getSqlApi: function(attrs) {
+  _getSqlApi: function(attrs, user) {
     attrs = attrs || {};
     var port = attrs.sql_api_port
     var domain = attrs.sql_api_domain + (port ? ':' + port: '')
@@ -458,7 +458,7 @@ var Vis = cdb.core.View.extend({
     }
 
     var sql = new cartodb.SQL({
-      user: attrs.user_name,
+      user: user ? user : attrs.user_name,
       protocol: protocol,
       host: domain,
       version: version
@@ -494,7 +494,7 @@ var Vis = cdb.core.View.extend({
       return;
     }
 
-    var sql = this._getSqlApi(layerView.options)
+    var sql = this._getSqlApi(layerView.options, layerView._getUserName ? layerView._getUserName(layerView.options.user_name) : null)
 
 
     // if the layer has no infowindow just pass the interaction
