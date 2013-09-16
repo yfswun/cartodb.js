@@ -21,7 +21,7 @@ function LayerDefinition(layerDefinition, options) {
   this._waiting = false;
   this.lastTimeUpdated = null;
   this._refreshTimer = -1;
-  this.rnd = (Date.now()/1000) | 0;
+  this.rnd = Math.floor(Date.now()/1000)
 }
 
 /**
