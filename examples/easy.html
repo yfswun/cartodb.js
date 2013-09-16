@@ -22,11 +22,13 @@
     <div id="map"></div>
 
     <!-- include cartodb.js library -->
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
+    <script src="../dist/cartodb.js"></script>
+
 
     <script>
+
       function main() {
-        cartodb.createVis('map', 'http://documentation.cartodb.com/api/v2/viz/2b13c956-e7c1-11e2-806b-5404a6a683d5/viz.json', {
+        cartodb.createVis('map', './2.json', {
             shareable: true,
             title: true,
             description: true,
