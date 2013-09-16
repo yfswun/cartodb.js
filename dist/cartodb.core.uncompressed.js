@@ -1,5 +1,5 @@
 // version: 3.1.04_debounce
-// sha: 041784587f1dbfb40956e4fb64dd182f9f48ad70
+// sha: a7773abea4f7c39595c7a4568b3ef6c1ecd9e746
 ;(function() {
   this.cartodb = {};
   var Backbone = {};
@@ -1759,7 +1759,7 @@ function LayerDefinition(layerDefinition, options) {
   this._waiting = false;
   this.lastTimeUpdated = null;
   this._refreshTimer = -1;
-  this.rnd = (Date.now()/1000) | 0;
+  this.rnd = Math.floor(Date.now()/1000)
 }
 
 /**
