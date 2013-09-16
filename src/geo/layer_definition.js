@@ -21,6 +21,7 @@ function LayerDefinition(layerDefinition, options) {
   this._waiting = false;
   this.lastTimeUpdated = null;
   this._refreshTimer = -1;
+  this.rnd = (Date.now()/1000) | 0;
 }
 
 /**
@@ -512,10 +513,21 @@ LayerDefinition.prototype = {
     return url_params.join('&')
   },
 
+  _getUserName: function(user_name) {
+    var user
+    if (_.isArray(user_name)) {
+      user = user_name[this.rnd % user_name.length];
+    } else {
+      user = user_name;
+    }
+    return user;
+  },
+
   _tilerHost: function() {
     var opts = this.options;
+    var user = this._getUserName(opts.user_name);
     return opts.tiler_protocol +
-         "://" + ((opts.user_name) ? opts.user_name+".":"")  +
+         "://" + ((user) ? user+".":"")  +
          opts.tiler_domain +
          ((opts.tiler_port != "") ? (":" + opts.tiler_port) : "");
   },
@@ -533,7 +545,8 @@ LayerDefinition.prototype = {
       if(!cdn_host.http && !cdn_host.https) {
         throw new Error("cdn_host should contain http and/or https entries");
       }
-      h += cdn_host[opts.tiler_protocol] + "/" + opts.user_name;
+      var user = this._getUserName(opts.user_name);
+      h += cdn_host[opts.tiler_protocol] + "/" + user;
       return h;
     }
   },
