@@ -514,12 +514,15 @@ LayerDefinition.prototype = {
   },
 
   _getUserName: function(user_name) {
-    var user
+    var user;
+    user_name = cdb.config.get('user_name') || user_name;
+
     if (_.isArray(user_name)) {
       user = user_name[this.rnd % user_name.length];
     } else {
       user = user_name;
     }
+
     return user;
   },
 
@@ -534,6 +537,9 @@ LayerDefinition.prototype = {
 
   _host: function(subhost) {
     var opts = this.options;
+
+    opts.no_cdn = cdb.config.get('no_cdn') || opts.no_cdn;
+
     if (opts.no_cdn) {
       return this._tilerHost();
     } else {
