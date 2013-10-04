@@ -416,7 +416,7 @@ LayerDefinition.prototype = {
   },
 
   _layerGroupTiles: function(layerGroupId, params) {
-    var subdomains = this.options.subdomains || ['0', '1', '2', '3'];
+    var subdomains = this.options.subdomains || 'abcd';
     if(this.isHttps()) {
       subdomains = [null]; // no subdomain
     }
