@@ -24,6 +24,7 @@ describe("Vis", function() {
     this.mapConfig = {
       updated_at: 'cachebuster',
       title: "irrelevant",
+      url: "http://cartodb.com",
       center: [40.044, -101.95],
       bounding_box_sw: [20, -140],
       bounding_box_ne: [ 55, -50],
@@ -73,6 +74,48 @@ describe("Vis", function() {
     this.vis.load(this.mapConfig);
     expect(this.vis.mapView.map_googlemaps).not.toEqual(undefined);
   });
+
+  it("should not invalidate map if map height is 0", function() {
+    var container = $('<div>').css('height', '0');
+    var vis = new cdb.vis.Vis({el: container});
+    this.mapConfig.map_provider = "googlemaps";
+
+    vis.load(this.mapConfig);
+
+    waitsFor(function() {
+      return vis.mapView;
+    }, "MapView element never created :(", 10000);
+
+    runs(function () {
+      spyOn(vis.mapView, 'invalidateSize');
+      expect(vis.mapView.invalidateSize).not.toHaveBeenCalled();
+    });
+  });
+
+  it("should bind resize changes when map height is 0", function() {
+    var container = $('<div>').css('height', '0');
+    var vis = new cdb.vis.Vis({el: container});
+    spyOn(vis, '_onResize');
+
+    this.mapConfig.map_provider = "googlemaps";
+    vis.load(this.mapConfig);
+    $(window).trigger('resize');
+    expect(vis._onResize).toHaveBeenCalled();
+    expect(vis.mapConfig).toBeDefined();
+  });
+
+  it("shouldn't bind resize changes when map height is greater than 0", function() {
+    var container = $('<div>').css('height', '200px');
+    var vis = new cdb.vis.Vis({el: container});
+    spyOn(vis, '_onResize');
+
+    this.mapConfig.map_provider = "googlemaps";
+    vis.load(this.mapConfig);
+    $(window).trigger('resize');
+    expect(vis._onResize).not.toHaveBeenCalled();
+    expect(vis.center).not.toBeDefined();
+  });
+
 
   it("should pass map to overlays", function() {
     var _map;
@@ -127,6 +170,16 @@ describe("Vis", function() {
       title: true
     });
     expect(this.vis.$('.cartodb-header').length).toEqual(1);
+  });
+
+  it("should add header without link in the title", function() {
+    var mapConfig = _.clone(this.mapConfig);
+    mapConfig.url = null;
+    this.vis.load(mapConfig, {
+      title: true
+    });
+    expect(this.vis.$('.cartodb-header').length).toEqual(1);
+    expect(this.vis.$('.cartodb-header h1 > a').length).toEqual(0);
   });
   
   it("should use zoom", function() {

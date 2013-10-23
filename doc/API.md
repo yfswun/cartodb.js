@@ -119,10 +119,10 @@ Below, you have an example using a previously instatiated leaflet map.
 <div class="margin20"></div>
 <div class="code_title">Adding cartodb layers to an existing map</div>
   ``` javascript
-    <div id="map"></div>
+    <div id="map_canvas"></div>
 
     <script>
-      var map = new L.Map('map', {
+      var map = new L.Map('map_canvas', {
         center: [0,0],
         zoom: 2
       });
@@ -226,7 +226,9 @@ Creates a visualization inside the map_id DOM object.
     - **zoom**: initial zoom.
     - **cartodb_logo**: default to true, set to false if you want to remove the cartodb logo.
     - **infowindow**: set to false if you want to disable the infowindow (enabled by default).
+    - **legends**: if it's true legends are shown in the map.
     - **https**: if true forces tiles to be fetched using https. If false it uses the predefined method
+
 
 #### cartodb.Vis
 
@@ -307,6 +309,8 @@ With visualizations already created through the CartoDB console, you can simply 
   + **options**: 
     - **https**: force https
     - **refreshTime**: if is set, the layer is refreshed each refreshTime milliseconds.
+    - **infowindow**: set to false if you want to disable the infowindow (enabled by default).
+    - **legends**: if it's true legends are shown in the map.
 
   + **callback(layer)**: if a function is specified is called when the layer is created passing it as argument.
 
@@ -417,7 +421,10 @@ Adds a new data to the current layer. With this method data from multiple tables
   ```
 <div class="margin20"></div>
 
-sql and cartocss are mandatory, an exception is raised if any of them are not present. If the interactivity is not set, there is no interactivity enabled for that layer (better performance).
+sql and cartocss are mandatory, an exception is raised if any of them are not present. If the interactivity is not set, there is no interactivity enabled for that layer (better performance). SQL and CartoCSS syntax should be correct, see Postgres and CartoCSS reference. There are some restrictions in the SQL queries:
+
+- must not write. INSERT, DELETE, UPDATE, ALTER and so on are not allowed (the query will fail)
+- must not contain trialing semicolon
 
 ###### Returns
 
@@ -473,7 +480,7 @@ self object
 <div class="code_title">sublayer.set</div>
   ```
     sublayer.set({
-      query: "SELECT * FROM table_name WHERE cartodb_id < 100",
+      sql: "SELECT * FROM table_name WHERE cartodb_id < 100",
       cartocss: "#layer { marker-fill: red }",
       interactivity: "cartodb_id,the_geom,magnitude"
     });
@@ -683,7 +690,7 @@ CartoDB offers a powerful SQL API for you to query and retreive data from your C
       })
       .error(function(errors) {
         // errors contains a list of errors
-        console.log("error:" + err);
+        console.log("errors:" + errors);
       })
   ```
 <div class="margin20"></div>

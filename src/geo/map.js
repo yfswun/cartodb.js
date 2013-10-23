@@ -100,7 +100,8 @@ cdb.geo.PlainLayer = cdb.geo.MapLayer.extend({
     type: 'Plain',
     base_type: "plain",
     className: "plain",
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    image: ''
   }
 });
 
@@ -508,9 +509,13 @@ cdb.geo.MapView = cdb.core.View.extend({
   * add a infowindow to the map
   */
   addInfowindow: function(infoWindowView) {
-    if (infoWindowView) {
-      this.$el.append(infoWindowView.render().el);
-      this.addView(infoWindowView);
+    this.addOverlay(infoWindowView);
+  },
+
+  addOverlay: function(overlay) {
+    if (overlay) {
+      this.$el.append(overlay.render().el);
+      this.addView(overlay);
     }
   },
 

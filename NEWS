@@ -1,12 +1,96 @@
-3.0.05 (18//11//2013)
+3.2.04 (15//10/2013)
+-----
+- enable image basemaps
+
+3.2.03 (14//10/2013)
+-----
+- changed CDN urls
+
+3.2.02 (10//10/2013)
+-----
+- fixed click propagation in legends.
+
+3.2.01 (10//09/2013)
+-----
+- fixed bug that prevented the use of google charts urls in the infowindow covers.
+- fixed geocoder specs
+
+3.2.00 (09//30/2013)
+-----
+- ported to leaflet 0.6 #55
+
+3.1.14 (09//24/2013)
+-----
+- fixed problem with IE9 when the map has only one layer
+
+3.1.13 (09//18/2013)
+-----
+- new custom infowindow html available for visualization.
+- problems editing polygon and linestring geojson.
+
+3.1.12 (09//11/2013)
+-----
+- fixed problem when an embed GMaps/Leaflet map is hidden (#70)
+
+3.1.11 (09//10/2013)
+-----
+- fixed problem when an embed GMaps map is hidden (#70)
+
+3.1.10 (09//10/2013)
+-----
+- fixed problem with infowindow option in createVis (#69)
+
+3.1.09 (09//06/2013)
+-----
+- fixed problem when the number of layers is different than the number of legends (refix)
+
+3.1.08 (09//06/2013)
+-----
+- fixed problem when the number of layers is different than the number of legends
+
+3.1.07 (09//03/2013)
+-----
+- fixed interactiviy in IE9 with more than one layer
+- removed extra comma in layer selector (IE fix)
+
+3.1.06 (09//02/2013)
+-----
+- fixed #66 layer interactivity was wrong when a layer was hidden
+
+3.1.05 (08//08/2013)
+-----
+- Adds addInfowindow and addCursorInteraction
+- changes layergroup request to use GET when is possible
+
+3.1.04 (08//08/2013)
+-----
+- Adds styles for NoneLegend
+
+3.1.03 (08//08/2013)
+-----
+- Prevents showing empty legends.
+
+3.1.02 (08//07/2013)
+-----
+- Flips the order of the legends.
+
+3.1.01 (08//06/2013)
+-----
+- Fixes the order of the legends.
+
+3.1.00 (08//06/2013)
+-----
+- added legends support
+
+3.0.05 (07//18//2013)
 -----
 - infowindow templates can be functions
 
-3.0.04 (18//11//2013)
+3.0.04 (07//18//2013)
 -----
 - fixed IE8 cors checking
 
-3.0.03 (17//11//2013)
+3.0.03 (07//17//2013)
 -----
 - fixed collision with older jQuery version
 - fixed infowindows when there is no interaction enabled when loading from viz.json

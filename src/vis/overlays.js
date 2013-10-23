@@ -39,7 +39,16 @@ cdb.vis.Overlay.register('header', function(data, vis) {
 
   var template = cdb.core.Template.compile(
     data.template || "\
-      {{#title}}<h1><a href='#' onmousedown=\"window.open('{{url}}')\">{{title}}</a></h1>{{/title}}\
+      {{#title}}\
+        <h1>\
+          {{#url}}\
+            <a href='#' onmousedown=\"window.open('{{url}}')\">{{title}}</a>\
+          {{/url}}\
+          {{^url}}\
+            {{title}}\
+          {{/url}}\
+        </h1>\
+      {{/title}}\
       {{#description}}<p>{{description}}</p>{{/description}}\
       {{#shareable}}\
         <div class='social'>\
@@ -47,7 +56,7 @@ cdb.vis.Overlay.register('header', function(data, vis) {
             href='http://www.facebook.com/sharer.php?u={{share_url}}&text=Map of {{title}}: {{description}}'>F</a>\
           <a class='twitter' href='https://twitter.com/share?url={{share_url}}&text=Map of {{title}}: {{descriptionShort}}... '\
            target='_blank'>T</a>\
-          </div>\
+        </div>\
       {{/shareable}}\
     ",
     data.templateType || 'mustache'
@@ -89,6 +98,8 @@ cdb.vis.Overlay.register('infowindow', function(data, vis) {
   }
 
   var infowindowModel = new cdb.geo.ui.InfowindowModel({
+    template: data.template,
+    alternative_names: data.alternative_names,
     fields: data.fields,
     template_name: data.template_name
   });
@@ -128,6 +139,18 @@ cdb.vis.Overlay.register('layer_selector', function(data, vis) {
     dropdown_template: dropdown_template,
     layer_names: data.layer_names
   });
+
+  if(vis.legends) {
+    layerSelector.bind('change:visible', function(visible, order) {
+      //var o = vis.legends.options.legends.length - order - 1;
+      var legend = vis.legends && vis.legends.getLayerByIndex(order);
+
+      if(legend) {
+        legend[visible ? 'show': 'hide']();
+      }
+
+    });
+  }
 
 
   return layerSelector.render();
