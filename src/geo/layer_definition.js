@@ -1,13 +1,15 @@
 
 
 function LayerDefinition(layerDefinition, options) {
-
+  var self = this;
   this.options = _.defaults(options, {
     ajax: window.$ ? window.$.ajax : reqwest.compat,
     pngParams: ['map_key', 'api_key', 'cache_policy', 'updated_at'],
     gridParams: ['map_key', 'api_key', 'cache_policy', 'updated_at'],
     cors: this.isCORSSupported(),
-    btoa: this.isBtoaSupported() ? this._encodeBase64Native : this._encodeBase64
+    btoa: this.isBtoaSupported() ? this._encodeBase64Native : this._encodeBase64,
+    MAX_GET_SIZE: 2033,
+    force_cors: false
   });
 
   this.setLayerDefinition(layerDefinition, { silent: true });
@@ -46,7 +48,7 @@ LayerDefinition.layerDefFromSubLayers = function(sublayers) {
     layers: []
   };
 
-  for (var i in sublayers) {
+  for (var i = 0; i < sublayers.length; ++i) {
     layer_definition.layers.push({
       type: 'cartodb',
       options: sublayers[i]
@@ -90,7 +92,7 @@ LayerDefinition.prototype = {
       obj.stat_tag = this.stat_tag;
     }
     obj.layers = [];
-    for(var i in this.layers) {
+    for(var i = 0; i < this.layers.length; ++i) {
       var layer = this.layers[i];
       if(!layer.options.hidden) {
         obj.layers.push({
@@ -109,6 +111,24 @@ LayerDefinition.prototype = {
 
   _encodeBase64Native: function (input) {
     return btoa(input)
+  },
+
+  /**
+   * return the layer number by index taking into
+   * account the hidden layers.
+   */
+  getLayerNumberByIndex: function(index) {
+    var layers = [];
+    for(var i = 0; i < this.layers.length; ++i) {
+      var layer = this.layers[i];
+      if(!layer.options.hidden) {
+        layers.push(i);
+      }
+    }
+    if (index >= layers.length) {
+      return -1;
+    }
+    return +layers[index];
   },
 
   // ie7 btoa,
@@ -156,15 +176,17 @@ LayerDefinition.prototype = {
 
   getLayerToken: function(callback) {
     var self = this;
+    function _done(data, err) {
+      var fn;
+      while(fn = self._layerTokenQueue.pop()) {
+        fn(data, err);
+      }
+    }
     clearTimeout(this._timeout);
+    this._queue.push(_done);
     this._layerTokenQueue.push(callback);
     this._timeout = setTimeout(function() {
-      self._getLayerToken(function(data, err) {
-        var fn;
-        while(fn = self._layerTokenQueue.pop()) {
-          fn(data, err);
-        }
-      });
+      self._getLayerToken(_done);
     }, 4);
   },
 
@@ -181,7 +203,8 @@ LayerDefinition.prototype = {
 
     // check request queue
     if(this._queue.length) {
-      this._getLayerToken(this._queue.pop());
+      var last = this._queue[this._queue.length - 1];
+      this._getLayerToken(last);
     }
   },
 
@@ -205,6 +228,9 @@ LayerDefinition.prototype = {
       },
       error: function(xhr) {
         var err = { errors: ['unknow error'] };
+        if (xhr.status === 0) {
+          err = { errors: ['connection error'] };
+        }
         try {
           err = JSON.parse(xhr.responseText);
         } catch(e) {}
@@ -216,13 +242,37 @@ LayerDefinition.prototype = {
     });
   },
 
+  // returns the compressor depending on the size
+  // of the layer
+  _getCompressor: function(payload) {
+    var self = this;
+    if (this.options.compressor) {
+      return this.options.compressor;
+    }
+
+    payload = payload || JSON.stringify(this.toJSON());
+    if (!this.options.force_compress && payload.length < this.options.MAX_GET_SIZE) {
+      return function(data, level, callback) {
+        callback("config=" + encodeURIComponent(data));
+      };
+    }
+
+    return function(data, level, callback) {
+      data = JSON.stringify({ config: data });
+      LZMA.compress(data, level, function(encoded) {
+        callback("lzma=" + encodeURIComponent(self._array2hex(encoded)));
+      });
+    };
+
+  },
+
   _requestGET: function(params, callback) {
     var self = this;
     var ajax = this.options.ajax;
-    var json = JSON.stringify({ config: JSON.stringify(this.toJSON()) });
-    LZMA.compress(json, 3, function(encoded) {
-      encoded = self._array2hex(encoded);
-      params.push("lzma=" + encodeURIComponent(encoded));
+    var json = JSON.stringify(this.toJSON());
+    var compressor = this._getCompressor(json);
+    compressor(json, 3, function(encoded) {
+      params.push(encoded);
       ajax({
         dataType: 'jsonp',
         url: self._tilerHost() + '/tiles/layergroup?' + params.join('&'),
@@ -253,9 +303,10 @@ LayerDefinition.prototype = {
 
     // if the previous request didn't finish, queue it
     if(this._waiting) {
-      this._queue.push(callback);
       return this;
     }
+
+    this._queue = [];
 
     // setup params
     var extra_params = this.options.extra_params || {};
@@ -266,13 +317,27 @@ LayerDefinition.prototype = {
     // mark as the request is being done
     this._waiting = true;
     var req = null;
-    if(this.options.cors) {
+    if (this._usePOST()) {
       req = this._requestPOST;
     } else {
       req = this._requestGET;
     }
     req.call(this, params, callback);
     return this;
+  },
+
+  _usePOST: function() {
+    if (this.options.cors) {
+      if (this.options.force_cors) {
+        return true;
+      }
+      // check payload size
+      var payload = JSON.stringify(this.toJSON());
+      if (payload < this.options.MAX_GET_SIZE) {
+        return false;
+      }
+    }
+    return false;
   },
 
   removeLayer: function(layer) {
@@ -368,7 +433,7 @@ LayerDefinition.prototype = {
       tiles.push(cartodb_url + tileTemplate + ".png?" + pngParams );
 
       var gridParams = this._encodeParams(params, this.options.gridParams);
-      for(var layer in this.layers) {
+      for(var layer = 0; layer < this.layers.length; ++layer) {
         grids[layer] = grids[layer] || [];
         grids[layer].push(cartodb_url + "/" + layer +  tileTemplate + ".grid.json?" + gridParams);
       }
@@ -573,6 +638,14 @@ LayerDefinition.prototype = {
 
   getSubLayerCount: function() {
     return this.getLayerCount();
+  },
+
+  getSubLayers: function() {
+    var layers = []
+    for (var i = 0; i < this.getSubLayerCount(); ++i) {
+      layers.push(this.getSubLayer(i))
+    }
+    return layers;
   }
 
 
@@ -621,6 +694,12 @@ SubLayer.prototype = {
   setCartoCSS: function(cartocss) {
     return this.set({
       cartocss: cartocss
+    });
+  },
+
+  setInteractivity: function(fields) {
+    return this.set({
+      interactivity: fields
     });
   },
 

@@ -62,6 +62,7 @@ cdb.geo.ui.LayerSelector = cdb.core.View.extend({
 
   _getLayers: function() {
     var self = this;
+    this.layers = [];
 
     _.each(this.map.layers.models, function(layer) {
 
@@ -74,6 +75,9 @@ cdb.geo.ui.LayerSelector = cdb.core.View.extend({
           m.set('type', 'layergroup');
 
           m.set('visible', !layerGroupView.getSubLayer(i).get('hidden'));
+          m.bind('change:visible', function(model) {
+            this.trigger("change:visible", model.get('visible'), model.get('order'), model);
+          }, self);
 
           if(self.options.layer_names) {
             m.set('layer_name', self.options.layer_names[i]);
@@ -89,11 +93,13 @@ cdb.geo.ui.LayerSelector = cdb.core.View.extend({
           layerView.bind('switchChanged', self._setCount, self);
           self.layers.push(layerView);
         }
-      } else if (layer.get("type") == "CartoDB") {
-
+      } else if (layer.get("type") === "CartoDB" || layer.get('type') === 'torque') {
         var layerView = self._createLayer('LayerView', { model: layer });
         layerView.bind('switchChanged', self._setCount, self);
         self.layers.push(layerView);
+        layerView.model.bind('change:visible', function(model) {
+          this.trigger("change:visible", model.get('visible'), model.get('order'), model);
+        }, self);
       }
 
     });

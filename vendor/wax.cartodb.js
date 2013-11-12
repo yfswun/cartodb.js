@@ -1,4 +1,4 @@
-/* wax - 7.0.0dev10 - v6.0.4-148-gcfdd624 */
+/* wax - 7.0.0dev10 - v6.0.4-151-g87ab6b1 */
 
 
 !function (name, context, definition) {
@@ -2126,8 +2126,7 @@ var Mustache = (typeof module !== "undefined" && module.exports) || {};
       , match = url.match(cbreg)
       , script = doc.createElement('script')
       , loaded = 0
-      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1
-      , isIE9 = navigator.userAgent.indexOf('MSIE 9.0') !== -1;
+      , isIE10 = navigator.userAgent.indexOf('MSIE 10.0') !== -1;
 
     if (match) {
       if (match[3] === '?') {
@@ -2142,9 +2141,7 @@ var Mustache = (typeof module !== "undefined" && module.exports) || {};
     win[cbval] = generalCallback
 
     script.type = 'text/javascript'
-    script.src = url
-    script.async = true
-    if (typeof script.onreadystatechange !== 'undefined' && !isIE10 && !isIE9) {
+    if (typeof script.onreadystatechange !== 'undefined' && !isIE10) {
       // need this for IE due to out-of-order onreadystatechange(), binding script
       // execution to an event listener gives us control over when the script
       // is executed. See http://jaubourg.net/2010/07/loading-script-as-onclick-handler-of.html
@@ -2166,6 +2163,9 @@ var Mustache = (typeof module !== "undefined" && module.exports) || {};
       head.removeChild(script)
       loaded = 1
     }
+
+    script.src = url
+    script.async = true
 
     // Add the script to the DOM head
     head.appendChild(script)

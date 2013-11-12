@@ -1,7 +1,7 @@
 describe("LayerDefinition", function() {
   var layerDefinition;
   beforeEach(function(){
-    var  layer_definition = {
+    var layer_definition = {
       version: '1.0.0',
       stat_tag: 'vis_id',
       layers: [{
@@ -129,10 +129,10 @@ describe("LayerDefinition", function() {
     layerDefinition.options.no_cdn = false;
     layerDefinition.options.subdomains = ['a', 'b', 'c', 'd'];
     var tiles = layerDefinition._layerGroupTiles('test_layer');
-    expect(tiles.tiles[0]).toEqual('http://a.tiles.cartocdn.com/rambo/tiles/layergroup/test_layer/{z}/{x}/{y}.png?');
-    expect(tiles.tiles[1]).toEqual('http://b.tiles.cartocdn.com/rambo/tiles/layergroup/test_layer/{z}/{x}/{y}.png?');
-    expect(tiles.grids[0][0]).toEqual('http://a.tiles.cartocdn.com/rambo/tiles/layergroup/test_layer/0/{z}/{x}/{y}.grid.json?');
-    expect(tiles.grids[0][1]).toEqual('http://b.tiles.cartocdn.com/rambo/tiles/layergroup/test_layer/0/{z}/{x}/{y}.grid.json?');
+    expect(tiles.tiles[0]).toEqual('http://a.api.cartocdn.com/rambo/tiles/layergroup/test_layer/{z}/{x}/{y}.png?');
+    expect(tiles.tiles[1]).toEqual('http://b.api.cartocdn.com/rambo/tiles/layergroup/test_layer/{z}/{x}/{y}.png?');
+    expect(tiles.grids[0][0]).toEqual('http://a.api.cartocdn.com/rambo/tiles/layergroup/test_layer/0/{z}/{x}/{y}.grid.json?');
+    expect(tiles.grids[0][1]).toEqual('http://b.api.cartocdn.com/rambo/tiles/layergroup/test_layer/0/{z}/{x}/{y}.grid.json?');
   });
 
   it("grid url should not include interactivity", function() {
@@ -152,17 +152,79 @@ describe("LayerDefinition", function() {
 
   it("should use cdn_url as default", function() {
     delete layerDefinition.options.no_cdn;
-    expect(layerDefinition._host()).toEqual('http://tiles.cartocdn.com/rambo');
-    expect(layerDefinition._host('0')).toEqual('http://0.tiles.cartocdn.com/rambo');
+    expect(layerDefinition._host()).toEqual('http://api.cartocdn.com/rambo');
+    expect(layerDefinition._host('0')).toEqual('http://0.api.cartocdn.com/rambo');
     layerDefinition.options.tiler_protocol = "https";
-    expect(layerDefinition._host()).toEqual('https://d3pu9mtm6f0hk5.cloudfront.net/rambo');
-    expect(layerDefinition._host('a')).toEqual('https://a.d3pu9mtm6f0hk5.cloudfront.net/rambo');
+    expect(layerDefinition._host()).toEqual('https://cartocdn.global.ssl.fastly.net/rambo');
+    expect(layerDefinition._host('a')).toEqual('https://a.cartocdn.global.ssl.fastly.net/rambo');
+  });
+
+  it("should return values for the latest query", function() {
+    tokens = [];
+    layerDefinition.options.ajax = function(p) { 
+      layerDefinition.getLayerToken(function(a) {
+        tokens.push(a);
+      });
+      layerDefinition.options.ajax = function(p) { 
+        p.success({ layergroupid: 'test2' });
+      }
+      p.success({ layergroupid: 'test' });
+    };
+    runs(function() {
+      layerDefinition.getLayerToken(function(a) {
+        tokens.push(a);
+      });
+      layerDefinition.getLayerToken(function(a) {
+        tokens.push(a);
+      });
+    });
+    waits(1000);
+    runs(function() {
+      expect(tokens.length).toEqual(3);
+      expect(tokens[0]).toEqual(tokens[1]);
+      expect(tokens[0]).toEqual(tokens[2]);
+      expect(tokens[0].layergroupid).toEqual('test2');
+    });
+  });
+
+
+  it("it should use jsonp when request is less than 2kb", function() {
+    var params;
+    layerDefinition.options.ajax = function(p) { 
+      params = p;
+      p.success({ layergroupid: 'test' });
+    };
+    runs(function() {
+      layerDefinition._getLayerToken();
+    });
+    waits(100);
+    runs(function() {
+      expect(params.dataType).toEqual('jsonp');
+    })
+  });
+
+  it("should use not use compression for small layergroups", function() {
+    layerDefinition.options.cors = false;
+    layerDefinition.options.api_key = 'test';
+    layerDefinition.options.ajax = function(p) { 
+      params = p;
+      p.success({ layergroupid: 'test' });
+    };
+
+    runs(function() {
+      layerDefinition._getLayerToken();
+    });
+    waits(100);
+    runs(function() {
+      expect(params.url.indexOf('config') !== -1).toEqual(true);
+    });
   });
 
   it("it should use jsonp when cors is not available", function() {
     var params, lzma;
     layerDefinition.options.cors = false;
     layerDefinition.options.api_key = 'test';
+    layerDefinition.options.force_compress = true;
     layerDefinition.options.ajax = function(p) { 
       params = p;
       p.success({ layergroupid: 'test' });
@@ -177,7 +239,7 @@ describe("LayerDefinition", function() {
         });
       });
     });
-    waits(200);
+    waits(300);
     runs(function() {
       expect(params.url).toEqual(layerDefinition._tilerHost() + '/tiles/layergroup?map_key=test&lzma=' + encodeURIComponent(lzma));
     });
@@ -186,6 +248,9 @@ describe("LayerDefinition", function() {
   it("should add api_key", function() {
     var url = null;
     layerDefinition.options.cors = true;
+    layerDefinition.options.compressor = function(data, level, call) {
+      call("config=" + data);
+    }
     layerDefinition.options.ajax = function(p) { 
       url = p.url;
       p.success({ layergroupid: 'test' });
@@ -240,7 +305,18 @@ describe("LayerDefinition", function() {
     runs(function() {
       expect(layerDefinition.invalidate).toHaveBeenCalled();
     });
+
   });
+
+  it("should manage layer index with hidden layers", function() {
+    expect(layerDefinition.getLayerNumberByIndex(0)).toEqual(0);
+    expect(layerDefinition.getLayerNumberByIndex(1)).toEqual(1);
+
+    layerDefinition.getSubLayer(0).hide();
+    expect(layerDefinition.getLayerNumberByIndex(0)).toEqual(1);
+
+    expect(layerDefinition.getLayerNumberByIndex(1)).toEqual(-1);
+  }),
 
   describe("sublayers", function() {
 
@@ -307,6 +383,7 @@ describe("LayerDefinition", function() {
       expect(a).toEqual(true);
 
     });
+
   });
 
   describe('layerDefFromSubLayers', function() {
