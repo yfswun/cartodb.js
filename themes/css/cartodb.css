@@ -800,7 +800,7 @@ div.cartodb-popup.header.yellow a.cartodb-popup-close-button:hover {
 
     border: 1px solid #999999;
     background: white;
-    z-index: 5;
+    z-index: 10001;
 
     cursor: text;
   }
@@ -851,7 +851,7 @@ div.cartodb-popup.header.yellow a.cartodb-popup-close-button:hover {
 
     border: 1px solid #999999;
     background: white;
-    z-index: 5;
+    z-index: 10001;
   }
 
   div.cartodb-legend .legend-title {
