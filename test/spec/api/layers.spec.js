@@ -244,7 +244,7 @@ describe('api.layers', function() {
           });
         });
 
-        waits(500);
+        waits(5500);
 
         runs(function() {
           expect(s.called).toEqual(true);
