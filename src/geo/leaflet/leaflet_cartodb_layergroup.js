@@ -275,9 +275,14 @@ L.CartoDBGroupLayerBase = L.TileLayer.extend({
         curleft += obj.offsetLeft;
         curtop += obj.offsetTop;
       } while (obj = obj.offsetParent);
-      var p = map.containerPointToLayerPoint(new L.Point(x - curleft, y - curtop))
+      var p = map.containerPointToLayerPoint(new L.Point(x - curleft, y - curtop));
       return p;
     } else {
+      // position fixed
+      if (obj.getBoundingClientRect) {
+        var clientRect = obj.getBoundingClientRect();
+        return map.containerPointToLayerPoint(new L.Point(x - clientRect.left - window.scrollX, y - clientRect.top - window.scrollY))
+      }
       // IE
       return map.mouseEventToLayerPoint(o.e)
     }
