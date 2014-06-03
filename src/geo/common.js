@@ -13,7 +13,7 @@ CartoDBLayerCommon.prototype = {
   show: function() {
     this.setOpacity(this.options.previous_opacity === undefined ? 0.99: this.options.previous_opacity);
     delete this.options.previous_opacity;
-    this.setInteraction(true);
+    this._interactionDisabled = false;
   },
 
   hide: function() {
@@ -21,51 +21,8 @@ CartoDBLayerCommon.prototype = {
       this.options.previous_opacity = this.options.opacity;
     }
     this.setOpacity(0);
-    this.setInteraction(false);
-  },
-
-  /**
-   * Check if CartoDB logo already exists
-   */
-  _isWadusAdded: function(container, className) {
-    // Check if any cartodb-logo exists within container
-    var a = [];
-    var re = new RegExp('\\b' + className + '\\b');
-    var els = container.getElementsByTagName("*");
-    for(var i=0,j=els.length; i<j; i++)
-      if(re.test(els[i].className))a.push(els[i]);
-
-    return a.length > 0;
-  },
-
-  /**
-   *  Check if browser supports retina images
-   */
-  _isRetinaBrowser: function() {
-    return  ('devicePixelRatio' in window && window.devicePixelRatio > 1) ||
-            ('matchMedia' in window && window.matchMedia('(min-resolution:144dpi)') &&
-            window.matchMedia('(min-resolution:144dpi)').matches);
-  },
-
-  /**
-   * Add Cartodb logo
-   * It needs a position, timeout if it is needed and the container where add it
-   */
-  _addWadus: function(position, timeout, container) {
-    var self = this;
-    setTimeout(function() {
-      if (self.options.cartodb_logo !== false && !self._isWadusAdded(container, 'cartodb-logo')) {
-        var cartodb_link = document.createElement("div");
-        var is_retina = self._isRetinaBrowser();
-        cartodb_link.setAttribute('class','cartodb-logo');
-        
-          cartodb_link.setAttribute('style',"position:absolute; bottom:0; left:0; display:block; border:none; z-index:1000000;");
-          var protocol = location.protocol.indexOf('https') === -1 ? 'http': 'https';
-          cartodb_link.innerHTML = "<a href='http://www.cartodb.com' target='_blank'><img width='71' height='29' src='" + protocol + "://cartodb.s3.amazonaws.com/static/new_logo" + (is_retina ? '@2x' : '') + ".png' style='position:absolute; bottom:" + 
-            ( position.bottom || 0 ) + "px; left:" + ( position.left || 0 ) + "px; display:block; width:71px!important; height:29px!important; border:none; outline:none;' alt='CartoDB' title='CartoDB' />";
-          container.appendChild(cartodb_link);
-      }
-    },( timeout || 0 ));
+    // disable here interaction for all the layers
+    this._interactionDisabled = true;
   },
 
   /**
@@ -100,7 +57,8 @@ CartoDBLayerCommon.prototype = {
       // layer will be created
       if(this.urls) {
         // generate the tilejson from the urls. wax needs it
-        var tilejson = this._tileJSONfromTiles(layer, this.urls);
+        var layer_index = this.getLayerIndexByNumber(+layer);
+        var tilejson = this._tileJSONfromTiles(layer_index, this.urls);
 
         // remove previous
         layerInteraction = this.interaction[layer];
@@ -114,14 +72,14 @@ CartoDBLayerCommon.prototype = {
           .map(this.options.map)
           .tilejson(tilejson)
           .on('on', function(o) {
-            o.layer = layer || 0;
-            o.layer = self.getLayerNumberByIndex(o.layer);
+            if (self._interactionDisabled) return;
+            o.layer = +layer;
             self._manageOnEvents(self.options.map, o);
           })
           .on('off', function(o) {
+            if (self._interactionDisabled) return;
             o = o || {}
-            o.layer = layer || 0;
-            o.layer = self.getLayerNumberByIndex(o.layer);
+            o.layer = +layer;
             self._manageOffEvents(self.options.map, o);
           });
       }
@@ -252,7 +210,57 @@ CartoDBLayerCommon.prototype = {
     }, 30000);
 
   }
-
-
 };
 
+
+
+
+cdb.geo.common = {};
+
+cdb.geo.common.CartoDBLogo = {
+
+  /**
+   * Check if any class already exists
+   * in the provided container
+   */
+  isWadusAdded: function(container, className) {
+    // Check if any cartodb-logo exists within container
+    var a = [];
+    var re = new RegExp('\\b' + className + '\\b');
+    var els = container.getElementsByTagName("*");
+    for(var i=0,j=els.length; i<j; i++)
+      if(re.test(els[i].className))a.push(els[i]);
+
+    return a.length > 0;
+  },
+
+  /**
+   *  Check if browser supports retina images
+   */
+  isRetinaBrowser: function() {
+    return  ('devicePixelRatio' in window && window.devicePixelRatio > 1) ||
+            ('matchMedia' in window && window.matchMedia('(min-resolution:144dpi)') &&
+            window.matchMedia('(min-resolution:144dpi)').matches);
+  },
+
+  /**
+   * Add Cartodb logo
+   * It needs a position, timeout if it is needed and the container where to add it
+   */
+  addWadus: function(position, timeout, container) {
+    var self = this;
+    setTimeout(function() {
+      if (!self.isWadusAdded(container, 'cartodb-logo')) {
+        var cartodb_link = document.createElement("div");
+        var is_retina = self.isRetinaBrowser();
+        cartodb_link.setAttribute('class','cartodb-logo');
+        cartodb_link.setAttribute('style',"position:absolute; bottom:0; left:0; display:block; border:none; z-index:1000000;");
+        var protocol = location.protocol.indexOf('https') === -1 ? 'http': 'https';
+        var link = cdb.config.get('cartodb_logo_link');
+        cartodb_link.innerHTML = "<a href='" + link + "' target='_blank'><img width='71' height='29' src='" + protocol + "://cartodb.s3.amazonaws.com/static/new_logo" + (is_retina ? '@2x' : '') + ".png' style='position:absolute; bottom:" + 
+          ( position.bottom || 0 ) + "px; left:" + ( position.left || 0 ) + "px; display:block; width:71px!important; height:29px!important; border:none; outline:none;' alt='CartoDB' title='CartoDB' />";
+        container.appendChild(cartodb_link);
+      }
+    },( timeout || 0 ));
+  }
+};

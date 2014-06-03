@@ -1,6 +1,30 @@
 
 (function() {
 
+// map mobile control
+cdb.vis.Overlay.register('mobile', function(data, vis) {
+
+  var template = cdb.core.Template.compile(
+    data.template || '\
+    <div class="torque"></div>\
+    <div class="top-shadow"></div>\
+    <div class="bottom-shadow"></div>\
+    <div class="legends"></div>\
+    <a class="toggle" href="#"></a>\
+    ',
+    data.templateType || 'mustache'
+  );
+
+  var mobile = new cdb.geo.ui.Mobile({
+    template: template,
+    torqueLayer: data.torqueLayer,
+    legends: data.legends,
+    map: data.map
+  });
+
+  return mobile.render();
+});
+
 // map zoom control
 cdb.vis.Overlay.register('zoom', function(data, vis) {
 
@@ -8,6 +32,7 @@ cdb.vis.Overlay.register('zoom', function(data, vis) {
     vis.trigger('error', 'zoom template is empty')
     return;
   }
+
   var zoom = new cdb.geo.ui.Zoom({
     model: data.map,
     template: cdb.core.Template.compile(data.template)
@@ -55,41 +80,53 @@ cdb.vis.Overlay.register('header', function(data, vis) {
           {{/url}}\
         </h1>\
       {{/title}}\
-      {{#description}}<p>{{description}}</p>{{/description}}\
-      {{#shareable}}\
+      {{#description}}<p>{{{description}}}</p>{{/description}}\
+      {{#mobile_shareable}}\
         <div class='social'>\
           <a class='facebook' target='_blank'\
             href='http://www.facebook.com/sharer.php?u={{share_url}}&text=Map of {{title}}: {{description}}'>F</a>\
-          <a class='twitter' href='https://twitter.com/share?url={{share_url}}&text=Map of {{title}}: {{descriptionShort}}... '\
+          <a class='twitter' href='https://twitter.com/share?url={{share_url}}&text={{twitter_title}}'\
            target='_blank'>T</a>\
         </div>\
-      {{/shareable}}\
+      {{/mobile_shareable}}\
     ",
     data.templateType || 'mustache'
   );
 
-  var titleLength = data.map.get('title') ? data.map.get('title').length : 0;
-  var descLength = data.map.get('description') ? data.map.get('description').length : 0;
-
-  var maxDescriptionLength = MAX_SHORT_DESCRIPTION_LENGTH - titleLength;
-  var description = data.map.get('description');
-  var descriptionShort = description;
-
-  if(descLength > maxDescriptionLength) {
-    var descriptionShort = description.substr(0, maxDescriptionLength);
-    // @todo (@johnhackworth): Improvement; Not sure if there's someway of doing thins with a regexp
-    descriptionShort = descriptionShort.split(' ');
-    descriptionShort.pop();
-    descriptionShort = descriptionShort.join(' ');
+  function truncate(s, length) {
+    return s.substr(0, length-1) + (s.length > length ? '…' : '');
   }
 
+  var title       = data.map.get('title');
+  var description = data.map.get('description');
+
+  var facebook_title = title + ": " + description;
+  var twitter_title;
+
+  if (title && description) {
+    twitter_title = truncate(title + ": " + description, 112) + " %23map "
+  } else if (title) {
+    twitter_title = truncate(title, 112) + " %23map"
+  } else if (description){
+    twitter_title = truncate(description, 112) + " %23map"
+  } else {
+    twitter_title = "%23map"
+  }
+
+  var shareable = (data.shareable == "false" || !data.shareable) ? null : data.shareable;
+  var mobile_shareable = shareable;
+
+  mobile_shareable = mobile_shareable && (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+
   var header = new cdb.geo.ui.Header({
-    title: data.map.get('title'),
+    title: title,
     description: description,
-    descriptionShort: descriptionShort,
+    facebook_title: facebook_title,
+    twitter_title: twitter_title,
     url: data.url,
     share_url: data.share_url,
-    shareable: (data.shareable == "false" || !data.shareable) ? null : data.shareable,
+    mobile_shareable: mobile_shareable,
+    shareable: shareable && !mobile_shareable,
     template: template
   });
 
@@ -146,25 +183,117 @@ cdb.vis.Overlay.register('layer_selector', function(data, vis) {
     layer_names: data.layer_names
   });
 
-  if(vis.legends) {
+  if (vis.legends) {
+
     layerSelector.bind('change:visible', function(visible, order, layer) {
-      if (layer.get('type') === 'layergroup') {
-        var legend = vis.legends && vis.legends.getLayerByIndex(order);
-        if(legend) {
-          legend[visible ? 'show': 'hide']();
-        }
-      } else if (layer.get('type') === 'torque') {
+
+      if (layer.get('type') === 'torque') {
+
         var timeSlider = vis.getOverlay('time_slider');
+
         if (timeSlider) {
           timeSlider[visible ? 'show': 'hide']();
         }
+
       }
+
+      if (layer.get('type') === 'layergroup' || layer.get('type') === 'torque') {
+
+        var legend = vis.legends && vis.legends.getLegendByIndex(order);
+
+        if (legend) {
+          legend[visible ? 'show': 'hide']();
+        }
+
+      } 
 
     });
   }
 
-
   return layerSelector.render();
+
+});
+
+// fullscreen
+cdb.vis.Overlay.register('fullscreen', function(data, vis) {
+
+  var template = cdb.core.Template.compile(
+    data.template || '<a href="#"></a>',
+    data.templateType || 'mustache'
+  );
+
+  var fullscreen = new cdb.ui.common.FullScreen({
+    doc: "#map > div",
+    mapView: vis.mapView,
+    template: template
+  });
+
+  return fullscreen.render();
+
+});
+
+
+// share content
+cdb.vis.Overlay.register('share', function(data, vis) {
+
+  // Add the complete url for facebook and twitter
+  if (location.href) {
+    data.share_url = encodeURIComponent(location.href);
+  } else {
+    data.share_url = data.url;
+  }
+
+  var template = cdb.core.Template.compile(
+    data.template || '\
+      <div class="mamufas">\
+        <div class="block modal {{modal_type}}">\
+          <a href="#close" class="close">x</a>\
+          <div class="head">\
+            <h3>Share this map</h3>\
+          </div>\
+          <div class="content">\
+            <div class="buttons">\
+              <h4>Social</h4>\
+              <ul>\
+                <li><a class="facebook" target="_blank" href="{{ facebook_url }}">Share on Facebook</a></li>\
+                <li><a class="twitter" href="{{ twitter_url }}" target="_blank">Share on Twitter</a></li>\
+                <li><a class="link" href="{{ public_map_url }}" target="_blank">Link to this map</a></li>\
+              </ul>\
+            </div><div class="embed_code">\
+             <h4>Embed this map</h4>\
+             <textarea id="" name="" cols="30" rows="10">{{ code }}</textarea>\
+           </div>\
+          </div>\
+        </div>\
+      </div>\
+    ',
+    data.templateType || 'mustache'
+  );
+
+  var url = location.href;
+
+  url = url.replace("public_map", "embed_map");
+
+  var public_map_url = url.replace("embed_map", "public_map"); // TODO: get real URL
+
+  var code = "<iframe width='100%' height='520' frameborder='0' src='" + url + "' allowfullscreen webkitallowfullscreen mozallowfullscreen oallowfullscreen msallowfullscreen></iframe>";
+
+  var dialog = new cdb.ui.common.ShareDialog({
+    title: data.map.get("title"),
+    description: data.map.get("description"),
+    model: vis.map,
+    code: code,
+    url: data.url,
+    public_map_url: public_map_url,
+    share_url: data.share_url,
+    template: template,
+    target: $(".cartodb-share a"),
+    size: $(document).width() > 400 ? "" : "small",
+    width: $(document).width() > 400 ? 430 : 216
+  });
+
+  return dialog.render();
+
 });
 
 // search content
@@ -192,11 +321,18 @@ cdb.vis.Overlay.register('search', function(data, vis) {
 // tooltip
 cdb.vis.Overlay.register('tooltip', function(data, vis) {
   var layer;
-  var layers = vis.getLayers();
-  if(layers.length > 1) {
-    layer = layers[1];
+  if (!data.layer) {
+    var layers = vis.getLayers();
+    if(layers.length > 1) {
+      layer = layers[1];
+    }
+    data.layer = layer;
   }
-  data.layer = layer;
+
+  if(!data.layer) {
+    throw new Error("layer is null");
+  }
+  data.layer.setInteraction(true);
   var tooltip = new cdb.geo.ui.Tooltip(data);
   return tooltip;
 
@@ -205,10 +341,16 @@ cdb.vis.Overlay.register('tooltip', function(data, vis) {
 cdb.vis.Overlay.register('infobox', function(data, vis) {
   var layer;
   var layers = vis.getLayers();
-  if(layers.length > 1) {
-    layer = layers[1];
+  if (!data.layer) {
+    if(layers.length > 1) {
+      layer = layers[1];
+    }
+    data.layer = layer;
   }
-  data.layer = layer;
+  if(!data.layer) {
+    throw new Error("layer is null");
+  }
+  data.layer.setInteraction(true);
   var infobox = new cdb.geo.ui.InfoBox(data);
   return infobox;
 

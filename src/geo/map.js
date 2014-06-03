@@ -74,19 +74,8 @@ cdb.geo.MapLayer = cdb.core.Model.extend({
       }
     }
     return false; // different type
-  },
-
-  /**
-   * Updates the style chaging the table name for a new one
-   * @param  {String} previousName
-   * @param  {String} newName
-   */
-  updateCartoCss: function(previousName, newName) {
-    var tileStyle = this.get('tile_style');
-    var replaceRegexp = new RegExp('#'+previousName, 'g');
-    tileStyle = tileStyle.replace(replaceRegexp, '#'+newName);
-    this.save({'tile_style': tileStyle});
   }
+
 
 });
 
@@ -103,6 +92,7 @@ cdb.geo.GMapsBaseLayer = cdb.geo.MapLayer.extend({
     base_type: 'gray_roadmap',
     style: null
   }
+
 });
 
 /**
@@ -197,6 +187,13 @@ cdb.geo.CartoDBGroupLayer = cdb.geo.MapLayer.extend({
   }
 });
 
+cdb.geo.CartoDBNamedMapLayer = cdb.geo.MapLayer.extend({
+  defaults: {
+    visible: true,
+    type: 'namedmap'
+  }
+});
+
 cdb.geo.Layers = Backbone.Collection.extend({
 
   model: cdb.geo.MapLayer,
@@ -245,7 +242,7 @@ cdb.geo.Map = cdb.core.Model.extend({
     center: [0, 0],
     zoom: 3,
     minZoom: 0,
-    maxZoom: 28,
+    maxZoom: 40,
     scrollwheel: true,
     provider: 'leaflet'
   },
@@ -342,19 +339,20 @@ cdb.geo.Map = cdb.core.Model.extend({
   _adjustZoomtoLayer: function(layer) {
 
     var maxZoom = layer.get('maxZoom');
-
-    if (_.isNumber(maxZoom)) {
-      this.set({ maxZoom: maxZoom });
-    }
-
     var minZoom = layer.get('minZoom');
 
-    if (_.isNumber(minZoom)) {
-      this.set({ minZoom: minZoom });
+    if (_.isNumber(maxZoom)) {
+
+      if ( this.get("zoom") > maxZoom ) this.set({ zoom: maxZoom, maxZoom: maxZoom });
+      else this.set("maxZoom", maxZoom);
+
     }
 
-    if (_.isNumber(maxZoom)) {
-      if ( this.get("zoom") > maxZoom ) this.set("zoom", maxZoom);
+    if (_.isNumber(minZoom)) {
+
+      if ( this.get("zoom") < minZoom ) this.set({ minZoom: minZoom, zoom: minZoom });
+      else this.set("minZoom", minZoom);
+
     }
 
   },
@@ -463,7 +461,7 @@ cdb.geo.Map = cdb.core.Model.extend({
   // set center and zoom according to fit bounds
   fitBounds: function(bounds, mapSize) {
     var z = this.getBoundsZoom(bounds, mapSize);
-    if(z == null) {
+    if(z === null) {
       return;
     }
     // project -> calculate center -> unproject
@@ -482,6 +480,8 @@ cdb.geo.Map = cdb.core.Model.extend({
 
   // adapted from leaflat src
   getBoundsZoom: function(boundsSWNE, mapSize) {
+    // sometimes the map reports size = 0 so return null
+    if(mapSize.x === 0 || mapSize.y === 0) return null;
     var size = [mapSize.x, mapSize.y],
     zoom = this.get('minZoom') || 0,
     maxZoom = this.get('maxZoom') || 24,

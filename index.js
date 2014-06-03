@@ -63,8 +63,10 @@
 //= require cdb/src/geo/gmaps/torque
 //= require cdb/src/geo/gmaps/gmaps
 //
+//= require cdb/src/geo/ui/share
 //= require cdb/src/geo/ui/zoom
 //= require cdb/src/geo/ui/zoom_info
+//= require cdb/src/geo/ui/mobile
 //= require cdb/src/geo/ui/legend
 //= require cdb/src/geo/ui/switcher
 //= require cdb/src/geo/ui/infowindow
@@ -74,6 +76,7 @@
 //= require cdb/src/geo/ui/tiles_loader
 //= require cdb/src/geo/ui/infobox
 //= require cdb/src/geo/ui/time_slider
+//= require cdb/src/geo/ui/fullscreen
 //
 //= require cdb/src/ui/common/tabpane
 //= require cdb/src/ui/common/dialog

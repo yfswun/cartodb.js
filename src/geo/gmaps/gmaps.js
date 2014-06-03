@@ -15,6 +15,7 @@ if(typeof(google) != "undefined" && typeof(google.maps) != "undefined") {
       "plain": cdb.geo.GMapsPlainLayerView,
       "gmapsbase": cdb.geo.GMapsBaseLayerView,
       "layergroup": cdb.geo.GMapsCartoDBLayerGroupView,
+      "namedmap": cdb.geo.GMapsCartoDBNamedMapView,
       "torque": function(layer, map) {
         return new cdb.geo.GMapsTorqueLayerView(layer, map);
       },
@@ -50,6 +51,14 @@ if(typeof(google) != "undefined" && typeof(google.maps) != "undefined") {
           backgroundColor: 'white',
           tilt: 0
         });
+
+        this.map.bind('change:maxZoom', function() {
+          self.map_googlemaps.setOptions({ maxZoom: self.map.get('maxZoom') });
+        }, this);
+
+        this.map.bind('change:minZoom', function() {
+          self.map_googlemaps.setOptions({ minZoom: self.map.get('minZoom') });
+        }, this);
 
       } else {
 

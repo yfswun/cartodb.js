@@ -56,9 +56,6 @@ To start using CartoDB.js just paste this piece of code within the HEAD tags of 
 <div class="code_title">Linking cartodb.js on your html file</div>
   ``` html
     <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
-    <!--[if lte IE 8]>
-      <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
-    <![endif]-->
     <script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
   ```
 <div class="margin20"></div>
@@ -227,8 +224,11 @@ Creates a visualization inside the map_id DOM object.
     - **cartodb_logo**: default to true, set to false if you want to remove the cartodb logo.
     - **infowindow**: set to false if you want to disable the infowindow (enabled by default).
     - **time_slider**: show time slider with torque layers (enabled by default)
+    - **layer_selector**: show layer selector (default: false)
     - **legends**: if it's true legends are shown in the map.
     - **https**: if true forces tiles to be fetched using https. If false it uses the predefined method
+    - **scrollwheel**: enable/disable the ability of zooming using scrollwheel (default enabled)
+    - **fullscreen**: if true adds a button to toggle the map fullscreen
 
 
 #### cartodb.Vis
@@ -244,6 +244,7 @@ Adds an overlay to the map that can be either a zoom control, a tooltip or an in
 ###### Arguments
 
   + **options**:
+    - **layer**: layer from the visualization where apply the overlay (optional)
     - **type**: ‘zoom’ | ‘tooltip’ | ‘infobox’
     - Extra options are available depending on the UI component selected before
 
@@ -311,6 +312,7 @@ With visualizations already created through the CartoDB console, you can simply 
     - **https**: force https
     - **refreshTime**: if is set, the layer is refreshed each refreshTime milliseconds.
     - **infowindow**: set to false if you want to disable the infowindow (enabled by default).
+    - **tooltip**: set to false if you want to disable the tooltip (enabled by default).
     - **legends**: if it's true legends are shown in the map.
     - **time_slider**: show time slider with torque layers (enabled by default)
     - **layerIndex**: when the visualization contains more than one layer this index allow to select
@@ -455,6 +457,40 @@ SubLayer object
 
 Refresh the data. If the data has been changed in CartoDB server it is displayed. If not nothing happens. Every time a parameter is changed in a sublayer the layer is refreshed so this method don't need to be called manually. New in V3.
 
+##### **layer.setAuthToken(auth_token) **
+
+Sets the auth token to create the layer. Only available for private visualizations. An exception is
+raised if the layer is not being loaded with HTTPS.
+
+##### Returns
+
+the layer itself 
+
+###### Arguments
+
+ + auth_token: string
+
+##### **layer.setParams(key, value) **
+
+Using named maps this function changes the layer confuguration. This could be called in different
+ways:
+
+    ```
+        layer.setParams('test', 10); // sets test = 10
+        layer.setParams('test', null); // unset test
+        layer.setParams({'test': 1, 'color': '#F00'}); // unset test
+    ```
+
+###### Arguments
+
+ + key: string
+ + value: string or number
+
+##### Returns
+
+the layer itself 
+
+
 #### cartodb.CartoDBLayer.SubLayer
 
 ##### **sublayer.set(layerDefinition) **
@@ -523,7 +559,7 @@ Remove the sublayer. If a method is called after removing it an exception is thr
 
 ##### **sublayer.setInteraction(true) **
 
-Sets the interaction of your layer to true (enabled) or false (disabled). When is disabled **featureOver**, **featureClick** and **featureOut** are **not** triggered.
+Sets the interaction of your layer to true (enabled) or false (disabled). When is disabled **featureOver**, **featureClick**, **featureOut**, **mouseover** and **mouseout** are **not** triggered.
 
 ###### Arguments
 
@@ -544,6 +580,8 @@ Remove temporally the sublayer from the layer. The layer is refreshed after call
 ###### Arguments
 
   + **template**: Set the custom infowindow template defined on the html. You can write simple html or use [Mustache templates](http://mustache.github.com/)
+  + **width**: Set the width of the infowindow (value must be a number).
+  + **maxHeight**: Set the max height of the scrolled content (value must be a number).
 
 <div class="margin20"></div>
 <div class="code_title">sublayer.infowindow.set</div>
@@ -551,7 +589,11 @@ Remove temporally the sublayer from the layer. The layer is refreshed after call
     <div id="map"></div>
 
     <script>
-      sublayer.infowindow.set('template', $('#infowindow_template').html());
+      sublayer.infowindow.set({
+        template: $('#infowindow_template').html(),
+        width: 218,
+        maxHeight: 100
+      });
     </script>
 
     <script type="infowindow/html" id="infowindow_template">
@@ -571,6 +613,8 @@ Remove temporally the sublayer from the layer. The layer is refreshed after call
     </script>
   ```
 <div class="margin20"></div>
+
+
 
 [Grab the complete example source code](https://github.com/CartoDB/cartodb.js/blob/develop/examples/custom_infowindow.html)
 
@@ -612,6 +656,29 @@ A callback when clicks in a feature.
 ###### callback arguments
 
 Same as **featureOver**.
+
+##### sublayer.mouseover -> ()
+
+Called when the mouse enters in **any** feature, useful to change cursor for hover
+
+##### sublayer.mouseout -> ()
+
+Called when the mouse leaves all the features, useful to change cursor for hover
+
+###### Example
+
+<div class="margin20"></div>
+<div class="code_title">sublayer.on</div>
+  ```
+    sublayer.on('mouseover', function() {
+      cursor.set('hand')
+    });
+    sublayer.on('mouseout', function() {
+      cursor.set('auto')
+    });
+  ```
+<div class="margin20"></div>
+
 
 ### Specific UI functions
 
@@ -975,24 +1042,13 @@ If you want to use [Leaflet](http://leafletjs.com) it gets even easier, CartoDB.
   ```
 <div class="margin20"></div>
 
-##### IE support
-
-We have worked hard to support Internet Explorer with CartoDB.js. It currently works for IE7 through IE10. The biggest change you should note is that for the CSS you will need to include an additional IE CSS document we have made available. Your <head> tag should now house links to three documents, as follows:
-
-<div class="margin20"></div>
-<div class="code_title">IE support</div>
-  ``` html
-    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.css" />
-    <!--[if lte IE 8]>
-      <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/themes/css/cartodb.ie.css" />
-    <![endif]-->
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/cartodb.js"></script>
-  ```
-<div class="margin20"></div>
-
 ##### HTTPS support
 
 You can use all the functionality of cartodb.js with HTTPs support. Be sure to add use https when importing both the JS library and the CSS file. Next, you will specify HTTPs for your Viz.JSON URL and as a parameter when you initialize your visualizaiton.
+
+<link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/themes/css/cartodb.css" />
+
+<script src="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/cartodb.js"></script>
 
 <div class="margin20"></div>
 <div class="code_title">HTTPS support</div>
@@ -1042,12 +1098,12 @@ Or, by running the following in your code:
   ```
 <div class="margin20"></div>
 
-Now, that you have your CartoDB.js version, you can point your site at that release. If the current version of CartoDB.js is 2.0.11, the URL would be:
+Now, that you have your CartoDB.js version, you can point your site at that release. If the current version of CartoDB.js is 3.9.06, the URL would be:
 
 <div class="margin20"></div>
 <div class="code_title">Persistent version hosting</div>
   ``` html
-    http://libs.cartocdn.com/cartodb.js/v3/3.0.01/cartodb.js
+    http://libs.cartocdn.com/cartodb.js/v3/3.9.06/cartodb.js
   ```
 <div class="margin20"></div>
 

@@ -7,6 +7,7 @@ if(typeof(google) == "undefined" || typeof(google.maps) == "undefined")
 var GMapsTorqueLayerView = function(layerModel, gmapsMap) {
 
   var extra = layerModel.get('extra_params');
+  layerModel.attributes.attribution = cdb.config.get('cartodb_attributions');
   cdb.geo.GMapsLayerView.call(this, layerModel, this, gmapsMap);
   torque.GMapsTorqueLayer.call(this, {
       table: layerModel.get('table_name'),
@@ -31,10 +32,15 @@ var GMapsTorqueLayerView = function(layerModel, gmapsMap) {
         api_key: extra ? extra.map_key: ''
       },
       map: gmapsMap,
-      cdn_url: layerModel.get('no_cdn') ? null: (layerModel.get('cdn_url') || cdb.CDB_HOST)
+      cartodb_logo: layerModel.get('cartodb_logo'),
+      attribution: layerModel.get('attribution'),
+      cdn_url: layerModel.get('no_cdn') ? null: (layerModel.get('cdn_url') || cdb.CDB_HOST),
+      cartocss: layerModel.get('cartocss') || layerModel.get('tile_style'),
+      named_map: layerModel.get('named_map'),
+      auth_token: layerModel.get('auth_token')
   });
 
-  this.setCartoCSS(this.model.get('tile_style'));
+  //this.setCartoCSS(this.model.get('tile_style'));
   if (layerModel.get('visible')) {
     this.play();
   }
@@ -51,10 +57,6 @@ _.extend(
     var changed = this.model.changedAttributes();
     if(changed === false) return;
     changed.tile_style && this.setCartoCSS(this.model.get('tile_style'));
-    changed['torque-blend-mode'] && this.setBlendMode(this.model.get('torque-blend-mode'));
-    changed['torque-duration'] && this.setDuration(this.model.get('torque-duration'));
-    changed['torque-steps'] && this.setSteps(this.model.get('torque-steps'));
-    changed['property'] && this.setColumn(this.model.get('property'));
     'query' in changed && this.setSQL(this.model.get('query'));
     if ('visible' in changed) 
       this.model.get('visible') ? this.show(): this.hide();
@@ -64,9 +66,20 @@ _.extend(
     //TODO: update screen
   },
 
+  onAdd: function() {
+    torque.GMapsTorqueLayer.prototype.onAdd.apply(this);
+    // Add CartoDB logo
+    if (this.options.cartodb_logo != false)
+      cdb.geo.common.CartoDBLogo.addWadus({ left: 74, bottom:8 }, 2000, this.map.getDiv())
+  },
+
   onTilesLoaded: function() {
     //this.trigger('load');
     Backbone.Events.trigger.call(this, 'load');
+  },
+
+  onTilesLoading: function() {
+    Backbone.Events.trigger.call(this, 'loading');
   }
 
 });

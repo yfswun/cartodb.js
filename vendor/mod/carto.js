@@ -57,6 +57,7 @@ var _mapnik_reference_latest = {
                 "src",
                 "dst",
                 "src-over",
+                "source-over", // added for torque
                 "dst-over",
                 "src-in",
                 "dst-in",
@@ -72,6 +73,7 @@ var _mapnik_reference_latest = {
                 "overlay",
                 "darken",
                 "lighten",
+                "lighter", // added for torque
                 "color-dodge",
                 "color-burn",
                 "hard-light",
@@ -190,6 +192,7 @@ var _mapnik_reference_latest = {
                     "src",
                     "dst",
                     "src-over",
+                    "source-over", // added for torque
                     "dst-over",
                     "src-in",
                     "dst-in",
@@ -205,6 +208,7 @@ var _mapnik_reference_latest = {
                     "overlay",
                     "darken",
                     "lighten",
+                    "lighter", // added for torque
                     "color-dodge",
                     "color-burn",
                     "hard-light",
@@ -641,7 +645,8 @@ var _mapnik_reference_latest = {
                 "css": "marker-type",
                 "type": [
                     "arrow",
-                    "ellipse"
+                    "ellipse",
+                    "rectangle"
                 ],
                 "default-value": "ellipse",
                 "doc": "The default marker-type. If a SVG file is not given as the marker-file parameter, the renderer provides either an arrow or an ellipse (a circle if height is equal to width)"
@@ -1688,6 +1693,53 @@ var _mapnik_reference_latest = {
                 "type": "expression",
                 "default-value": "0"
             }
+        },
+        "torque": {
+          "-torque-frame-count": {
+              "css": "-torque-frame-count",
+              "default-value": "128",
+              "type":"float",
+              "default-meaning": "the data is broken into 128 time frames",
+              "doc": "Number of animation steps/frames used in the animation. If the data contains a fewere number of total frames, the lesser value will be used."
+          },
+          "-torque-resolution": {
+              "css": "-torque-resolution",
+              "default-value": "2",
+              "type":"float",
+              "default-meaning": "",
+              "doc": "Spatial resolution in pixels. A resolution of 1 means no spatial aggregation of the data. Any other resolution of N results in spatial aggregation into cells of NxN pixels. The value N must be power of 2"
+          },
+          "-torque-animation-duration": {
+              "css": "-torque-animation-duration",
+              "default-value": "30",
+              "type":"float",
+              "default-meaning": "the animation lasts 30 seconds",
+              "doc": "Animation duration in seconds"
+          },
+          "-torque-aggregation-function": {
+              "css": "-torque-aggregation-function",
+              "default-value": "count(cartodb_id)",
+              "type": "string",
+              "default-meaning": "the value for each cell is the count of points in that cell",
+              "doc": "A function used to calculate a value from the aggregate data for each cell. See -torque-resolution"
+          },
+          "-torque-time-attribute": {
+              "css": "-torque-time-attribute",
+              "default-value": "time",
+              "type": "string",
+              "default-meaning": "the data column in your table that is of a time based type",
+              "doc": "The table column that contains the time information used create the animation"
+          },
+          "-torque-data-aggregation": {
+              "css": "-torque-data-aggregation",
+              "default-value": "linear",
+              "type": [
+                "linear",
+                "cumulative"
+              ],
+              "default-meaning": "previous values are discarded",
+              "doc": "A linear animation will discard previous values while a cumulative animation will accumulate them until it restarts"
+          }
         }
     },
     "colors": {
@@ -3178,6 +3230,10 @@ tree.Dimension.prototype = {
 
         return this;
     },
+    round: function() {
+        this.value = Math.round(this.value);
+        return this;
+    },
     toColor: function() {
         return new tree.Color([this.value, this.value, this.value]);
     },
@@ -4063,6 +4119,13 @@ tree.Reference.validValue = function(env, selector, value) {
         }
     } else if (tree.Reference.selector(selector).type == 'expression') {
         return true;
+    } else if (tree.Reference.selector(selector).type === 'unsigned') {
+        if (value.value[0].is === 'float') {
+            value.value[0].round();
+            return true;
+        } else {
+            return false;
+        }
     } else {
         if (tree.Reference.selector(selector).validate) {
             var valid = false;
@@ -4811,11 +4874,11 @@ tree.Value.prototype.toJS = function() {
   //var v = this.value[0].value[0];
   var val = this.eval()
   var v = val.toString();
-  if(val.is === "color" || val.is === 'uri') {
+  if(val.is === "color" || val.is === 'uri' || val.is === 'string' || val.is === 'keyword') {
     v = "'" + v + "'";
   } else if (val.is === 'field') {
     // replace [varuable] by ctx['variable']
-    v = v.replace(/\[(.*)\]/g, "ctx['\$1']")
+    v = v.replace(/\[(.*)\]/g, "data['\$1']")
   }
   return "_value = " + v + ";";
 };
@@ -4996,6 +5059,11 @@ CartoCSS.Layer.prototype = {
     return this.fullName().split('::')[1];
   },
 
+  eval: function(prop) {
+    var p = this.shader[prop];
+    if (!p) return;
+    return p({}, { zoom: 0, 'frame-offset': 0 });
+  },
 
   /*
    * `target`: style, 'svg', 'canvas-2d'...
