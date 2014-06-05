@@ -2503,6 +2503,40 @@ div.cartodb-timeslider p {
   text-align:center;
   color:#999999;
 }
+
+.cartodb-widget {
+  position:absolute;
+  z-index: 99999;
+
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+}
+
+.cartodb-widget .content {
+  padding: 10px;
+}
+
+.cartodb-widget .text{
+
+  font-size: 20px;
+  font-weight: bold;
+  line-height: normal;
+  color: #fff;
+
+  -ms-word-break: break-all;
+  word-break: break-all;
+
+  // Non standard for webkit
+  word-break: break-word;
+
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
+
+}
 @media
 only screen and (-webkit-min-device-pixel-ratio: 2),
 only screen and (   min--moz-device-pixel-ratio: 2),
@@ -3371,6 +3405,7 @@ div.cartodb-timeslider .ui-slider-vertical .ui-slider-range-max {
 
   div.cartodb-tooltip-content p {
     display:block;
+    margin:0;
     padding:0 0 7px;
     font:normal 12px "Helvetica Neue", "Helvetica", Arial;
     color:#333333;

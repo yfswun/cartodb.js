@@ -62,6 +62,7 @@
         'geo/geocoder.js',
         'geo/geometry.js',
         'geo/map.js',
+        'geo/ui/widget.js',
         'geo/ui/zoom.js',
         'geo/ui/zoom_info.js',
         'geo/ui/mobile.js',

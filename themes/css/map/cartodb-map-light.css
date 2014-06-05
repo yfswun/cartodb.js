@@ -1815,3 +1815,37 @@ div.cartodb-timeslider p {
   text-align:center;
   color:#999999;
 }
+
+.cartodb-widget {
+  position:absolute;
+  z-index: 99999;
+
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+}
+
+.cartodb-widget .content {
+  padding: 10px;
+}
+
+.cartodb-widget .text{
+
+  font-size: 20px;
+  font-weight: bold;
+  line-height: normal;
+  color: #fff;
+
+  -ms-word-break: break-all;
+  word-break: break-all;
+
+  // Non standard for webkit
+  word-break: break-word;
+
+  -webkit-hyphens: auto;
+  -moz-hyphens: auto;
+  hyphens: auto;
+
+}

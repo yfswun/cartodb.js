@@ -26,6 +26,26 @@ cdb.vis.Overlay.register('mobile', function(data, vis) {
 });
 
 // map zoom control
+cdb.vis.Overlay.register('text', function(data, vis) {
+
+  var template = cdb.core.Template.compile(
+    data.template || '\
+    <div class="content">\
+    <div class="text widget_text">{{{ text }}}</div>\
+    </div>',
+    data.templateType || 'mustache'
+  );
+
+  var widget = new cdb.geo.ui.Widget({
+    model: new cdb.core.Model(JSON.parse(data.options)),
+    template: template
+  });
+
+  return widget.render();
+
+});
+
+// map zoom control
 cdb.vis.Overlay.register('zoom', function(data, vis) {
 
   if(!data.template) {
