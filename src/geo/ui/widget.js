@@ -1,3 +1,39 @@
+cdb.geo.ui.Header = cdb.core.View.extend({
+
+  className: "cartodb-widget",
+
+  events: { },
+
+  default_options: { },
+
+  initialize: function() {
+
+    _.defaults(this.options, this.default_options);
+
+    this.template = this.options.template;
+
+  },
+
+  _applyStyle: function() {
+
+    var style      = this.model.get("style");
+
+  },
+
+  render: function() {
+
+    this.$el.html(this.template(this.model.toJSON()));
+
+    this.$text = this.$el.find(".text");
+
+    this._applyStyle();
+
+    return this;
+
+  }
+
+});
+
 cdb.geo.ui.Widget = cdb.core.View.extend({
 
   className: "cartodb-widget",
