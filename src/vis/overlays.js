@@ -25,7 +25,27 @@ cdb.vis.Overlay.register('mobile', function(data, vis) {
   return mobile.render();
 });
 
-cdb.vis.Overlay.register('header_widget', function(data, vis) {
+cdb.vis.Overlay.register('title', function(data, vis) {
+
+  var template = cdb.core.Template.compile(
+    data.template || '\
+    <div class="content">\
+    <div class="text">{{{ title }}}</div>\
+    <div class="description">{{{ description }}}</div>\
+    </div>',
+    data.templateType || 'mustache'
+  );
+
+  var widget = new cdb.geo.ui.Title({
+    model: new cdb.core.Model(JSON.parse(data.options)),
+    template: template
+  });
+
+  return widget.render();
+
+});
+
+cdb.vis.Overlay.register('image', function(data, vis) {
 
   var template = cdb.core.Template.compile(
     data.template || '\
@@ -35,7 +55,7 @@ cdb.vis.Overlay.register('header_widget', function(data, vis) {
     data.templateType || 'mustache'
   );
 
-  var widget = new cdb.geo.ui.Header({
+  var widget = new cdb.geo.ui.Image({
     model: new cdb.core.Model(JSON.parse(data.options)),
     template: template
   });

@@ -2522,7 +2522,6 @@ div.cartodb-timeslider p {
 .cartodb-widget .text{
 
   font-size: 20px;
-  font-weight: bold;
   line-height: normal;
   color: #fff;
 
@@ -2536,6 +2535,68 @@ div.cartodb-timeslider p {
   -moz-hyphens: auto;
   hyphens: auto;
 
+}
+
+.cartodb-widget.title-widget {
+  background:#333;
+}
+
+.cartodb-widget .content .text strong {
+  font-weight: bold;
+}
+
+.cartodb-widget .content .text em {
+  font-style: italic;
+}
+
+.cartodb-widget .content .text a {
+  color: inherit;
+}
+
+.cartodb-widget .content .text a:hover {
+  color: #333;
+}
+
+.cartodb-widget.widget-title {
+  width: 100%;
+
+  -moz-border-radius: 0;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.cartodb-widget.image-widget {
+}
+
+.cartodb-widget.image-widget img {
+  display: block;
+}
+
+.cartodb-widget.widget-title {
+  display:none;
+}
+
+.cartodb-widget.widget-title a {
+  color: #fff;
+}
+
+.cartodb-widget.widget-title a:hover {
+  color: #ccc;
+}
+
+.cartodb-widget.widget-title .description {
+  display:none;
+  color: #fff;
+  font-size:13px;
+}
+
+.cartodb-widget.widget-title .text {
+  display:none;
+  font-weight: bold;
+  font-size:15px;
+  color: #fff;
 }
 @media
 only screen and (-webkit-min-device-pixel-ratio: 2),
