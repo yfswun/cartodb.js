@@ -214,9 +214,11 @@ module.exports = function(config) {
       'karma-jasmine',
       'karma-sinon',
       'karma-coverage',
+      'karma-junit-reporter',
+      'karma-phantomjs-launcher',
       'karma-chrome-launcher',
       'karma-firefox-launcher',
-      'karma-junit-reporter',
+      'karma-ie-launcher'
       'karma-commonjs'
     ]
   });
