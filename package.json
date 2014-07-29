@@ -41,7 +41,7 @@
     "karma-ie-launcher": "~0.1.5"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run --browsers PhantomJS"
+    "test": "./node_modules/.bin/karma start --single-run --browsers Firefox"
   },
   "files": [
     "dist"
