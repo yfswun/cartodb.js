@@ -365,7 +365,7 @@ cdb.vis.Overlay.register('search', function(data, vis) {
 
   var search = new cdb.geo.ui.Search({
     template: template,
-    model: vis.map
+    map:      vis.map
   });
 
   return search.render();

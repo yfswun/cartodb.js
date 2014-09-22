@@ -44,11 +44,11 @@ cdb.geo.ui.Search = cdb.core.View.extend({
 
     // Show geocoder loader
     this._showLoader();
-     
+
     cdb.geo.geocoder.NOKIA.geocode(address, function(coords) {
       if (coords.length>0) {
         var validBBox = true;
-        
+
         // check bounding box is valid
         if(!coords[0].boundingbox || coords[0].boundingbox.south == coords[0].boundingbox.north ||
           coords[0].boundingbox.east == coords[0].boundingbox.west) {
@@ -56,7 +56,7 @@ cdb.geo.ui.Search = cdb.core.View.extend({
         }
 
         if (validBBox && coords[0].boundingbox) {
-          self.model.setBounds([
+          self.map.setBounds([
             [
               parseFloat(coords[0].boundingbox.south),
               parseFloat(coords[0].boundingbox.west)
@@ -67,8 +67,8 @@ cdb.geo.ui.Search = cdb.core.View.extend({
             ]
           ]);
         } else if (coords[0].lat && coords[0].lon) {
-          self.model.setCenter([coords[0].lat, coords[0].lon]);
-          self.model.setZoom(10);
+          self.map.setCenter([coords[0].lat, coords[0].lon]);
+          self.map.setZoom(10);
         }
       }
 
