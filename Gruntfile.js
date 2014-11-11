@@ -7,7 +7,6 @@
 
 
 module.exports = function(grunt) {
-  
   require('load-grunt-tasks')(grunt);
   require('time-grunt')(grunt);
 
@@ -41,6 +40,7 @@ module.exports = function(grunt) {
     usemin: require('./grunt/tasks/usemin').task(),
     htmlmin: require('./grunt/tasks/htmlmin').task(),
     concat: require('./grunt/tasks/concat').task(grunt, config),
+    browserify: require('./grunt/tasks/browserify').task(grunt, config),
     uglify: require('./grunt/tasks/uglify').task(),
     cssmin: require('./grunt/tasks/cssmin').task(),
     imagemin: require('./grunt/tasks/imagemin').task(),
@@ -143,6 +143,7 @@ module.exports = function(grunt) {
       'clean:dist',
       'concurrent:dist',
       'useminPrepare',
+      'browserify',
       'concat',
       'autoprefixer:dist',
       'cssmin',
@@ -162,4 +163,4 @@ module.exports = function(grunt) {
   grunt.registerTask('default', [
     'build'
   ]);
-}
+};

@@ -26,10 +26,13 @@ module.exports = {
           '<%= config.app %>/img/**/*.{gif,jpg,jpeg,png,svg,webp}'
         ],
         tasks: ['copy:stageStatic']
+      },
+      browserify: {
+        files: ['src/**/*.js'],
+        tasks: ['browserify']
       }
     }
   }
 }
 
 
-      

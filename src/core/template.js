@@ -108,18 +108,4 @@ cdb.core.TemplateList = Backbone.Collection.extend({
  */
 cdb.templates = new cdb.core.TemplateList();
 
-/**
- * load JST templates.
- * rails creates a JST variable with all the templates.
- * This functions loads them as default into cbd.template
- */
-cdb._loadJST = function() {
-  if(typeof(window.JST) !== undefined) {
-    cdb.templates.reset(
-      _(JST).map(function(tmpl, name) {
-        return { name: name, compiled: tmpl };
-      })
-    );
-  }
-};
 

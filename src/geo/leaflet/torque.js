@@ -1,3 +1,4 @@
+uniqueCallbackName = require('../../core/unique_callback_name.js');
 
 (function() {
 
@@ -49,7 +50,7 @@ var LeafLetTorqueLayer = L.TorqueLayer.extend({
       instanciateCallback: function() {
         var cartocss = layerModel.get('cartocss') || layerModel.get('tile_style');
 
-        return '_cdbct_' + cartodb.uniqueCallbackName(cartocss + query)
+        return '_cdbct_' + uniqueCallbackName(cartocss + query)
       }
     });
 

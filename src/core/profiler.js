@@ -28,8 +28,6 @@
   }
 ```
 */
-(function(exports) {
-
 var MAX_HISTORY = 1024;
 function Profiler() {}
 Profiler.metrics = {};
@@ -160,6 +158,4 @@ Profiler.metric = function(name) {
   return new Metric(name);
 };
 
-exports.Profiler = Profiler;
-
-})(cdb.core);
+module.exports = Profiler;

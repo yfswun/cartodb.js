@@ -53,24 +53,15 @@ module.exports = {
         }
       },
 
+      // Only required since browserify don't support footer.
       core: {
         options: {
-          banner: grunt.file.read('./grunt/templates/version_header.js') + "" + grunt.file.read('./grunt/templates/core_header.js') + "",
-          footer: grunt.file.read('./grunt/templates/core_footer.js')
+          banner: grunt.file.read('./grunt/templates/version_header.js'),
+          footer: '//cartodb.core end'
         },
         files: {
-          // Core library
           '<%= config.dist %>/cartodb.core.uncompressed.js': [
-            'vendor/underscore-min.js',
-            'grunt/templates/underscore_no_conflict.js',
-            'vendor/mustache.js',
-            'vendor/reqwest.min.js',
-            'src/cartodb.js',
-            'src/api/core_lib.js',
-            'src/core/profiler.js',
-            'src/api/sql.js',
-            'src/geo/layer_definition.js',
-            'src/api/tiles.js'
+            '<%= config.dist %>/cartodb.core.uncompressed.js'
           ]
         }
       },
