@@ -6,7 +6,7 @@ global.cdb = global.cartodb = {
   SQL: SQL,
   Tiles: Tiles,
 
-  VERSION: '3.11.24-dev',
+  VERSION: "3.11.24"",
   DEBUG: false,
 
   CARTOCSS_VERSIONS: {

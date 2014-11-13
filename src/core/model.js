@@ -1,4 +1,5 @@
 var _ = require('vendor-underscore');
+var Backbone = require('vendor/backbone.js');
 
 /**
  * NOTE! Assumes Backbone.Model to have been loaded to the global scope already!

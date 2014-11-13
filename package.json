@@ -62,10 +62,20 @@
       "browserify-shim": "^3.8.0"
     },
     "browser": {
-      "vendor-underscore": "./vendor/underscore-min.js"
+      "vendor-underscore": "./vendor/underscore-min.js",
+      "vendor-geojson": "./vendor/GeoJSON.js",
+      "vendor-jquery": "./vendor/jquery.min.js",
+      "vendor-jscrollpane": "./vendor/jscrollpane",
+      "vendor-json2": "./vendor/json2.js",
+      "vendor-lzma": "./vendor/lzma.js",
+      "vendor-mousewheel": "./vendor/mousewheel.js",
+      "vendor-mwheelintent": "./vendor/mwheelIntent.js",
+      "vendor-spin": "./vendor/spin.js",
+      "vendor-waxcartodb": "./vendor/wax.cartodb.js"
     },
     "browserify-shim": {
-      "vendor-underscore": "_"
+      "vendor-underscore": "_",
+      "vendor-jquery": "$"
     },
     "browserify": {
       "transform": [

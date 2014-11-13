@@ -23,6 +23,24 @@ module.exports = {
       core: {
         src: 'src/cartodb.core.js',
         dest: '<%= config.dist %>/cartodb.core.uncompressed.js'
+      },
+      standard: {
+        src: 'src/cartodb.js',
+        dest: '<%= config.dist %>/cartodb.uncompressed.js'
+      },
+      nojquery: {
+        src: 'src/cartodb.js',
+        dest: '<%= config.dist %>/_cartodb_nojquery.js',
+        options: {
+          ignore: ['vendor-jquery']
+        }
+      },
+      noleaflet: {
+        src: 'src/cartodb.js',
+        dest: '<%= config.dist %>/_cartodb_noleaflet.js',
+        options: {
+          ignore: ['**/leaflet.js']
+        }
       }
     };
   }
