@@ -7,11 +7,19 @@ cdb = global.cdb;
 global.JST = global.JST || {};
 var loadJST = require('core/load_jst.js');
 var Events = require('core/events.js');
+var Backbone = require('core/decorators/backbone.js');
+var $ = {}/*require('vendor-jquery)*/;
+var L = {}/*require('vendor-leaflet)*/;
+var Mustache = {}/*require('vendor-mustache')*/;
+var _ = {}/*require('vendor-underscore')*/;
 var Model = require('core/model.js');
 
-// TODO: Actually used? No references of usage/official doc support anywhere...
+// TODO: Actually used? No references of usage/official doc support anywhere... was located in src/core/model.js
 var debugCallbacks = require('core/debug_callbacks.js');
 cdb._debugCallbacks = debugCallbacks;
+
+// TODO: random global stuff found here&there w/o clear dependencies, load anyway to make sure it gets set on window.
+require('core/decorators/json_ie7_shim.js');
 
 /**
  * Base Model for all CartoDB models.
@@ -19,11 +27,18 @@ cdb._debugCallbacks = debugCallbacks;
  */
 cdb.core.Model = Model;
 
+cdb.Backbone = Backbone;
+cdb.$ = $;
+cdb.L = L;
+cdb.Mustache = Mustache;
+cdb._ = _;
+
+
+// TODO: Can this removed/replaced easily? what's the usage?
 cdb.files = [
   "../vendor/jquery.min.js",
   "../vendor/underscore-min.js",
   "../vendor/json2.js",
-  "../node_modules/backbone/backbone.js",
 
   "../vendor/leaflet.js",
   "../vendor/wax.cartodb.js",
@@ -35,7 +50,6 @@ cdb.files = [
   "../vendor/spin.js",
   "../vendor/lzma.js",
 
-  'core/decorator.js',
   'core/config.js',
   'core/log.js',
   'core/profiler.js',

@@ -32,6 +32,5 @@ global.cdb = global.cartodb = {
   ui: {
     common: {}
   },
-  vis: {},
-  decorators: {}
+  vis: {}
 };
