@@ -17,8 +17,11 @@ var Model = require('core/model.js');
 var debugCallbacks = require('core/debug_callbacks.js');
 cdb._debugCallbacks = debugCallbacks;
 
-// TODO: random global stuff found here&there w/o clear dependencies, load anyway to make sure it gets set on window.
+// TODO: random global stuff found here&there that it's not clear how to scope or browserify-shim'em, so let's leave
+// them on the global scope for now...
+require('vendor/json2.js');
 require('core/decorators/json_ie7_shim.js');
+require('wax.cartodb.js');
 
 /**
  * Base Model for all CartoDB models.
@@ -36,14 +39,6 @@ cdb._ = _;
 
 // TODO: Can this removed/replaced easily? what's the usage?
 cdb.files = [
-  "../vendor/jquery.min.js",
-  "../vendor/underscore-min.js",
-  "../vendor/json2.js",
-
-  "../vendor/leaflet.js",
-  "../vendor/wax.cartodb.js",
-  "../vendor/GeoJSON.js", //geojson gmaps lib
-
   "../vendor/jscrollpane.js",
   "../vendor/mousewheel.js",
   "../vendor/mwheelIntent.js",

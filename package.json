@@ -75,7 +75,8 @@
     },
     "browserify-shim": {
       "vendor-underscore": "_",
-      "vendor-jquery": "$"
+      "vendor-jquery": "$",
+      "vendor-geojson": "GeoJSON"
     },
     "browserify": {
       "transform": [
