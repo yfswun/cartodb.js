@@ -3,6 +3,8 @@ var remapify = require('remapify');
 
 module.exports = {
   task: function(grunt, config) {
+    var banner = grunt.file.read('./grunt/templates/dist_banner.js');
+
     return {
       options: {
         preBundleCB: function (b) {
@@ -25,22 +27,27 @@ module.exports = {
         dest: '<%= config.dist %>/cartodb.core.uncompressed.js'
       },
       standard: {
+        options: {
+          banner: banner
+        },
         src: 'src/cartodb.js',
         dest: '<%= config.dist %>/cartodb.uncompressed.js'
       },
       nojquery: {
-        src: 'src/cartodb.js',
-        dest: '<%= config.dist %>/_cartodb_nojquery.js',
         options: {
+          banner: banner,
           ignore: ['vendor-jquery']
-        }
+        },
+        src: 'src/cartodb.js',
+        dest: '<%= config.dist %>/_cartodb_nojquery.js'
       },
       noleaflet: {
+        options: {
+          banner: banner,
+          ignore: ['**/leaflet.js']
+        },
         src: 'src/cartodb.js',
         dest: '<%= config.dist %>/_cartodb_noleaflet.js',
-        options: {
-          ignore: ['**/leaflet.js']
-        }
       }
     };
   }
