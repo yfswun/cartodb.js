@@ -1,15 +1,16 @@
 // Extracted from cartodb.core.js since cartodb.core.js don't depended on these extra stuff.
 require("cartodb.core.js"); // defines window.cdb (used below), as well as defining all core stuff.
-
-global.JST = global.JST || {};
-var loadJST = require('core/load_jst.js');
-
-var Events = require('core/events.js');
-var debugCallbacks = require('core/debug_callbacks.js');
-var Model = require('core/model.js');
-
 cdb = global.cdb;
 
+// TODO: All these stuff was actually included in core, but could not be workable, due to missing the requirements
+// (these requires), seemed to only be available for non-core bundles (standard/noqjuery/noleaflet). Correct?
+global.JST = global.JST || {};
+var loadJST = require('core/load_jst.js');
+var Events = require('core/events.js');
+var Model = require('core/model.js');
+
+// TODO: Actually used? No references of usage/official doc support anywhere...
+var debugCallbacks = require('core/debug_callbacks.js');
 cdb._debugCallbacks = debugCallbacks;
 
 /**
