@@ -1,17 +1,16 @@
 // Extracted from cartodb.core.js since cartodb.core.js don't depended on these extra stuff.
-require("cartodb.core.js"); // defines window.cdb (used below), as well as defining all core stuff.
-cdb = global.cdb;
+cdb = require("cartodb.core.js"); // defines window.cdb (used below), as well as defining all core stuff.
 
 // TODO: All these stuff was actually included in core, but could not be workable, due to missing the requirements
 // (these requires), seemed to only be available for non-core bundles (standard/noqjuery/noleaflet). Correct?
-global.JST = global.JST || {};
+JST = global.JST || {};
 var loadJST = require('core/load_jst.js');
 var Events = require('core/events.js');
 var Backbone = require('core/decorators/backbone.js');
-var $ = {}/*require('vendor-jquery)*/;
-var L = {}/*require('vendor-leaflet)*/;
-var Mustache = {}/*require('vendor-mustache')*/;
-var _ = {}/*require('vendor-underscore')*/;
+var $ = require('vendor-jquery');
+var L = require('vendor/leaflet.js');
+var Mustache = require('vendor/mustache.js');
+var _ = require('vendor-underscore');
 var Model = require('core/model.js');
 
 // TODO: Actually used? No references of usage/official doc support anywhere... was located in src/core/model.js
@@ -27,6 +26,7 @@ require('core/decorators/json_ie7_shim.js');
  */
 cdb.core.Model = Model;
 
+// Moved from grunt/template/wrapper_footer to expose them on the global cdb object.
 cdb.Backbone = Backbone;
 cdb.$ = $;
 cdb.L = L;

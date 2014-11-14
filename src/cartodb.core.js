@@ -34,3 +34,5 @@ global.cdb = global.cartodb = {
   },
   vis: {}
 };
+
+module.exports = global.cdb;
