@@ -38,6 +38,9 @@ cdb.Mustache = Mustache;
 cdb._ = _;
 
 cdb.config = new Config();
+cdb.config.VERSION = 2;
+cdb.config.REPORT_ERROR_URL = '/api/v0/error';
+cdb.config.ERROR_TRACK_ENABLED = false;
 cdb.config.set({
   cartodb_attributions: "CartoDB <a href='http://cartodb.com/attributions' target='_blank'>attribution</a>",
   cartodb_logo_link: "http://www.cartodb.com"
