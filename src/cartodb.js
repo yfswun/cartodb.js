@@ -12,6 +12,7 @@ var L = require('vendor/leaflet.js');
 var Mustache = require('vendor/mustache.js');
 var _ = require('vendor-underscore');
 var Model = require('core/model.js');
+var Config = require('core/config.js');
 
 // TODO: Actually used? No references of usage/official doc support anywhere... was located in src/core/model.js
 var debugCallbacks = require('core/debug_callbacks.js');
@@ -36,6 +37,11 @@ cdb.L = L;
 cdb.Mustache = Mustache;
 cdb._ = _;
 
+cdb.config = new Config();
+cdb.config.set({
+  cartodb_attributions: "CartoDB <a href='http://cartodb.com/attributions' target='_blank'>attribution</a>",
+  cartodb_logo_link: "http://www.cartodb.com"
+});
 
 // TODO: Can this removed/replaced easily? what's the usage?
 cdb.files = [
