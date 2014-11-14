@@ -22,7 +22,7 @@ cdb._debugCallbacks = debugCallbacks;
 // them on the global scope for now...
 require('vendor/json2.js');
 require('core/decorators/json_ie7_shim.js');
-require('wax.cartodb.js');
+require('vendor/wax.cartodb.js');
 
 /**
  * Base Model for all CartoDB models.
@@ -45,6 +45,18 @@ cdb.config.set({
   cartodb_attributions: "CartoDB <a href='http://cartodb.com/attributions' target='_blank'>attribution</a>",
   cartodb_logo_link: "http://www.cartodb.com"
 });
+
+// TODO: migrated from old files, MUST be loaded here to access the globally defined(...) cdb.config stuff
+var Log = require('core/log.js');
+var Error = require('core/log/error.js');
+var ErrorList = require('core/log/error_list.js');
+cdb.errors = new ErrorList();
+cdb.log = new Log({tag: 'cdb'});
+
+// TODO: cdb.core.x migrated from old files, really used or can be deleted?
+cdb.core.Error = Error;
+cdb.core.ErrorList = ErrorList;
+cdb.core.Log = Log;
 
 // TODO: Can this removed/replaced easily? what's the usage?
 cdb.files = [
