@@ -116,7 +116,7 @@ describe("cdb.geo.ui.Annotation", function() {
       });
 
       view = new cdb.geo.ui.Annotation({
-        text: "This is <a href='http://www.cartodb.com'>a link</a>",
+        text: "This is <a href='http://www.cartodb.com'>a link</a> and this <a href='http://www.cartodb.com'>too</a>",
         latlng: [40, 2],
         mapView: mapView,
         minZoom: 0,
@@ -145,7 +145,8 @@ describe("cdb.geo.ui.Annotation", function() {
 
     it("should render the right links", function(done) {
       setTimeout(function() {
-        expect(view.$el.find(".text a").attr("target")).toEqual("_top");
+        expect(view.$el.find(".text a:first-child").attr("target")).toEqual("_top");
+        expect(view.$el.find(".text a:last-child").attr("target")).toEqual("_top");
         done();
       }, 700);
     });
