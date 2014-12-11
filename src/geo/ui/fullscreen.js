@@ -24,9 +24,9 @@ cdb.ui.common.FullScreen = cdb.core.View.extend({
     _.bindAll(this, 'render');
     _.defaults(this.options, this.default_options);
 
-    this.model = new cdb.core.Model({
-      allowWheelOnFullscreen: false
-    });
+    //this.model = new cdb.core.Model({
+      //allowWheelOnFullscreen: false
+    //});
 
     this._addWheelEvent();
 
@@ -63,14 +63,18 @@ cdb.ui.common.FullScreen = cdb.core.View.extend({
       docEl = $(this.options.doc)[0];
     }
 
-    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen;
-    var cancelFullScreen  = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen;
+    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
     var mapView = this.options.mapView;
 
-    if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement) {
+    if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
 
-      requestFullScreen.call(docEl);
+      if (docEl.webkitRequestFullScreen) {
+        requestFullScreen.call(docEl, Element.ALLOW_KEYBOARD_INPUT);
+      } else {
+        requestFullScreen.call(docEl);
+      }
 
       if (mapView) {
 

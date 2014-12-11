@@ -1,3 +1,104 @@
+3.11.26 ()
+- #235 - Allows to use the input fields in fullscreen on Chrome
+
+3.11.25 (26//11//2014)
+- #211 - Viz made with Torque between 2 different dates shows date + time
+- #223 - fixed problem with IE11 touch devices.
+- #205 - fixed problem with invalid lat lng object in touch devices.
+
+3.11.24 (11//11//2014)
+- don't render the fullscreen overlay for unsupported versions of IE
+- fixed using same callback name when there are more than one layer (#186)
+- added new params options to cartodb.createVis(): gmaps_base_type and gmaps_style
+- deprecate GMaps support, substitute GMaps basemaps with equivalent ones for Leaflet instead (#188)
+- fixes default height for itensity list elements in mobile
+
+3.11.23 (04//11//2014)
+- fixes rendering issue with category legends that contain long names
+- adds .toggle() method to layers and sublayers to change their visibility
+
+3.11.22 (03//11//2014)
+- fixes a bug that made the hidden Torque layers visible
+
+3.11.21 (24//10//2014)
+- enabled dynamic_cdn to route layergroup calls though the CDN
+
+3.11.20 (24//10//2014)
+- enabled fixed callback for layergroups and infowindows
+
+3.11.19 (23//10//2014)
+- fixes annotation specs
+- adds several methods to set the annotation properties.
+
+3.11.18 (22//10//2014)
+- adds annotation overlays
+
+3.11.17 (20//10//2014)
+- fixes positioning of the search and share overlays on the screen
+- fixed compatibility with mootools
+- fixes a problem with touch devices using two fingers for zooming.
+
+3.11.16 (10//10//2014)
+- applies the z-index to the text and image overlays
+
+3.11.15 (07//10//2014)
+- fixes a display issue with overlays in desktop.
+- fixed compatibility with mootools
+
+3.11.14 (06//10//2014)
+- adds stats_tag for all request in the url
+- mobile layout fixes:
+  - small CSS fixes
+	- fixes issues activating legends, layer_selectors and search
+	- setting the force_mobile to false disables the mobile layout
+  - adds specs
+
+3.11.13 (29//09//2014)
+- fixes the scope of the backdrop element in the CSS file
+
+3.11.12 (29//09//2014)
+- fixes a bug that prevented showing the torque slider
+
+3.11.11 (29//09//2014)
+- fixes a bug that prevented dragging google maps with the mobile layout activated
+
+3.11.10 (29//09//2014)
+- fixes a bug that prevented showing the legend using the createLayer method
+
+3.11.09 (29//09//2014)
+- adds mobile layout
+
+3.11.08 (21//09//2014)
+- updated torque module with speed optimizations
+
+3.11.07 (15//09/2014)
+- Fixed problem breaking words in infowindow content.
+
+3.11.06 (12//09/2014)
+- Fixed problem in infowindow showing horizontal scrollbar when it was not needed 
+- Fixed creating search overlay
+
+3.11.05 (20//08/2014)
+- Added support for query_wrapper in torque layers
+
+3.11.04 (12//08/2014)
+- Fixes ugly word break in text overlays.
+- Updates leaflet to 0.7.3
+
+3.11.03 (08//08/2014)
+- Fixes rendering issues with webfonts.
+
+3.11.02 (07//08/2014)
+- No longer sets the width to the text overlays.
+
+3.11.01 (07//08/2014)
+- Improves text and image overlay positioning.
+
+3.11.0 (06//08/2014)
+- If available visualization uses layer visibility settings from CartoDB viz.json.
+- Map header styles changed.
+- Support for new kind of overlays (text and image).
+
 3.10.2 (11//07/2014)
 - Added instanciateCallback to allow to cache instanciation responses
 - fixed rendering order in cdb.vis.addInfowindow (#126)

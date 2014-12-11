@@ -56,7 +56,7 @@
   /**
    * create a layer for the specified map
    *
-   * @param map should be a L.Map or google.maps.Map object
+   * @param map should be a L.Map object, or equivalent depending on what provider you have.
    * @param layer should be an url or a javascript object with the data to create the layer
    * @param options layer options
    *
@@ -159,6 +159,11 @@
 
       function createLayer() {
         layerView = viz.createLayer(layerData, { no_base_layer: true });
+
+        var torqueLayer;
+        var mobileEnabled = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        var addMobileLayout = (options.mobile_layout && mobileEnabled) || options.force_mobile;
+
         if(!layerView) {
           promise.trigger('error', "layer not supported");
           return promise;
@@ -170,10 +175,29 @@
           viz.addTooltip(layerView);
         }
         if(options.legends) {
-          viz.addLegends([layerData]);
+          viz.addLegends([layerData], ((mobileEnabled && options.mobile_layout) || options.force_mobile));
         }
+
         if(options.time_slider && layerView.model.get('type') === 'torque') {
-          viz.addTimeSlider(layerView);
+
+          if (!addMobileLayout) { // don't add the overlay if we are in mobile
+            viz.addTimeSlider(layerView);
+          }
+
+          torqueLayer = layerView;
+        }
+
+        if (addMobileLayout) {
+
+          options.mapView = map.viz.mapView;
+
+          viz.addOverlay({
+            type: 'mobile',
+            layerView: layerView,
+            overlays: [],
+            torqueLayer: torqueLayer,
+            options: options
+          });
         }
 
         callback && callback(layerView);

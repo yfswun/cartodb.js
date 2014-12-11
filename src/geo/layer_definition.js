@@ -1,4 +1,5 @@
 
+
 function Map(options) {
   var self = this;
   this.options = _.defaults(options, {
@@ -8,7 +9,10 @@ function Map(options) {
     cors: this.isCORSSupported(),
     btoa: this.isBtoaSupported() ? this._encodeBase64Native : this._encodeBase64,
     MAX_GET_SIZE: 2033,
-    force_cors: false
+    force_cors: false,
+    instanciateCallback: function() {
+      return '_cdbc_' + self._callbackName();
+    }
   });
 
   this.layerToken = null;
@@ -40,6 +44,7 @@ function NamedMap(named_map, options) {
     layer.options.layer_name = layer.layer_name;
   }
   this.named_map = named_map;
+  this.stat_tag = named_map.stat_tag;
   var token = named_map.auth_token || options.auth_token;
   if (token) {
     this.setAuthToken(token);
@@ -105,6 +110,10 @@ Map.prototype = {
 
   _encodeBase64Native: function (input) {
     return btoa(input)
+  },
+
+  _callbackName: function() {
+    return cartodb.uniqueCallbackName(JSON.stringify(this.toJSON()));
   },
 
   // given number inside layergroup 
@@ -302,9 +311,10 @@ Map.prototype = {
     compressor(json, 3, function(encoded) {
       params.push(encoded);
       var loadingTime = cartodb.core.Profiler.metric('cartodb-js.layergroup.get.time').start();
+      var host = self.options.dynamic_cdn ? self._host(): self._tilerHost();
       ajax({
         dataType: 'jsonp',
-        url: self._tilerHost() + endPoint + '?' + params.join('&'),
+        url: host + endPoint + '?' + params.join('&'),
         jsonpCallback: self.options.instanciateCallback,
         cache: !!self.options.instanciateCallback,
         success: function(data) {
@@ -370,6 +380,10 @@ Map.prototype = {
         params.push("auth_token=" + extra_params.auth_token);
       }
     }
+
+    if (this.stat_tag) {
+      params.push("stat_tag=" + this.stat_tag);
+    }
     // mark as the request is being done
     this._waiting = true;
     var req = null;
@@ -389,8 +403,8 @@ Map.prototype = {
       }
       // check payload size
       var payload = JSON.stringify(this.toJSON());
-      if (payload < this.options.MAX_GET_SIZE) {
-        return false;
+      if (payload.length > this.options.MAX_GET_SIZE) {
+        return true;
       }
     }
     return false;
@@ -584,6 +598,7 @@ Map.prototype = {
     return url_params.join('&')
   },
 
+
   _tilerHost: function() {
     var opts = this.options;
     return opts.tiler_protocol +
@@ -706,12 +721,7 @@ NamedMap.prototype = _.extend({}, Map.prototype, {
     var p = this.named_map.params || {};
     for(var i = 0; i < this.layers.length; ++i) {
       var layer = this.layers[i];
-      if(layer.options.hidden) {
-        p['layer' + i] = 0;
-      } else {
-        // when it's show just don't send it
-        delete p['layer' + i];
-      }
+      p['layer' + i] = layer.options.hidden ? 0: 1;
     }
     return p;
   },
@@ -740,8 +750,9 @@ NamedMap.prototype = _.extend({}, Map.prototype, {
 
   _attributesUrl: function(layer, feature_id) {
     // /api/maps/:map_id/:layer_index/attributes/:feature_id
+    var host = this.options.dynamic_cdn ? this._host(): this._tilerHost();
     var url = [
-      this._tilerHost(),
+      host,
       //'api',
       //'v1',
       Map.BASE_URL.slice(1),
@@ -768,17 +779,20 @@ NamedMap.prototype = _.extend({}, Map.prototype, {
 
   // for named maps attributes are fetch from attributes service
   fetchAttributes: function(layer_index, feature_id, columnNames, callback) {
+    this._attrCallbackName = this._attrCallbackName || this._callbackName();
     var ajax = this.options.ajax;
     var loadingTime = cartodb.core.Profiler.metric('cartodb-js.named_map.attributes.time').start();
     ajax({
       dataType: 'jsonp',
       url: this._attributesUrl(layer_index, feature_id),
+      jsonpCallback: '_cdbi_layer_attributes_' + this._attrCallbackName,
+      cache: true,
       success: function(data) {
-        loadingTime.end()
+        loadingTime.end();
         callback(data);
       },
       error: function(data) {
-        loadingTime.end()
+        loadingTime.end();
         cartodb.core.Profiler.metric('cartodb-js.named_map.attributes.error').inc();
         callback(null);
       }
@@ -998,6 +1012,7 @@ LayerDefinition.prototype = _.extend({}, Map.prototype, {
   fetchAttributes: function(layer_index, feature_id, columnNames, callback) {
     var layer = this.getLayer(layer_index);
     var sql = this._getSqlApi(this.options);
+    this._attrCallbackName = this._attrCallbackName || this._callbackName();
 
     // prepare columns with double quotes
     columnNames = _.map(columnNames, function(n) {
@@ -1010,6 +1025,10 @@ LayerDefinition.prototype = _.extend({}, Map.prototype, {
       fields: columnNames,
       cartodb_id: feature_id,
       sql: layer.options.sql
+    }, {
+      cache: true, // don't include timestamp
+      jsonpCallback: '_cdbi_layer_attributes_' + this._attrCallbackName,
+      jsonp: true
     }).done(function(interact_data) {
       loadingTime.end();
       if (interact_data.rows.length === 0 ) {
@@ -1050,6 +1069,11 @@ SubLayer.prototype = {
     this._parent.removeLayer(this._position);
     this._unbindInteraction();
     this._added = false;
+  },
+
+  toggle: function() {
+    this.get('hidden') ? this.show() : this.hide();
+    return !this.get('hidden');
   },
 
   show: function() {
@@ -1159,3 +1183,36 @@ SubLayer.prototype = {
 
 // give events capabilitues
 _.extend(SubLayer.prototype, Backbone.Events);
+
+/** utility methods to calculate hash */
+cartodb._makeCRCTable = function() {
+    var c;
+    var crcTable = [];
+    for(var n = 0; n < 256; ++n){
+        c = n;
+        for(var k = 0; k < 8; ++k){
+            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    return crcTable;
+}
+
+cartodb.crc32 = function(str) {
+    var crcTable = cartodb._crcTable || (cartodb._crcTable = cartodb._makeCRCTable());
+    var crc = 0 ^ (-1);
+
+    for (var i = 0, l = str.length; i < l; ++i ) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xFF];
+    }
+
+    return (crc ^ (-1)) >>> 0;
+};
+
+cartodb.uniqueCallbackName = function(str) {
+  cartodb._callback_c = cartodb._callback_c || 0;
+  ++cartodb._callback_c;
+  return cartodb.crc32(str) + "_" + cartodb._callback_c;
+};
+
+
