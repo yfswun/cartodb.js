@@ -102,6 +102,56 @@ describe("cdb.geo.ui.Annotation", function() {
 
   });
 
+  describe("Annotation rendering", function() {
+
+    beforeEach(function() {
+
+      map = new cdb.geo.Map();
+
+      container = $('<div>').css('height', '200px');
+
+      mapView = new cdb.geo.GoogleMapsMapView({
+        el: container,
+        map: map
+      });
+
+      view = new cdb.geo.ui.Annotation({
+        text: "This is <a href='http://www.cartodb.com'>a link</a>",
+        latlng: [40, 2],
+        mapView: mapView,
+        minZoom: 0,
+        maxZoom: 40,
+        style: {
+          textAlign: "left",
+          zIndex: 1000,
+          textAlign: "right",
+          "font-size": "13",
+          fontFamilyName: "Helvetica",
+          "box-color": "#F84F40",
+          boxOpacity: 0.7,
+          boxPadding: 10,
+          "line-width": 50
+        }
+      });
+
+      mapView.$el.append(view.render().$el);
+
+    });
+
+    afterEach(function() {
+      view.clean();
+      container.remove();
+    });
+
+    it("should render the right links", function(done) {
+      setTimeout(function() {
+        expect(view.$el.find(".text a").attr("target")).toEqual("_top");
+        done();
+      }, 700);
+    });
+
+  });
+
   describe("Annotation setters", function() {
 
     beforeEach(function() {
