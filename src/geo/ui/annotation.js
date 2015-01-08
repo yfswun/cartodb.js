@@ -237,16 +237,24 @@ cdb.geo.ui.Annotation = cdb.core.View.extend({
 
     var fontFamilyClass = "";
 
-    if      (fontFamily  == "Droid Sans") fontFamilyClass = "droid";
-    else if (fontFamily  == "Vollkorn")   fontFamilyClass = "vollkorn";
-    else if (fontFamily  == "Open Sans")  fontFamilyClass = "open_sans";
-    else if (fontFamily  == "Roboto")     fontFamilyClass = "roboto";
+    if      (fontFamily  == "Droid Sans")       fontFamilyClass = "droid";
+    else if (fontFamily  == "Vollkorn")         fontFamilyClass = "vollkorn";
+    else if (fontFamily  == "Open Sans")        fontFamilyClass = "open_sans";
+    else if (fontFamily  == "Roboto")           fontFamilyClass = "roboto";
+    else if (fontFamily  == "Lato")             fontFamilyClass = "lato";
+    else if (fontFamily  == "Graduate")         fontFamilyClass = "graduate";
+    else if (fontFamily  == "Gravitas One")     fontFamilyClass = "gravitas_one";
+    else if (fontFamily  == "Old Standard TT")  fontFamilyClass = "old_standard_tt";
 
     this.$el
     .removeClass("droid")
     .removeClass("vollkorn")
     .removeClass("roboto")
-    .removeClass("open_sans");
+    .removeClass("open_sans")
+    .removeClass("lato")
+    .removeClass("graduate")
+    .removeClass("gravitas_one")
+    .removeClass("old_standard_tt");
 
     this.$el.addClass(fontFamilyClass);
 
@@ -306,11 +314,21 @@ cdb.geo.ui.Annotation = cdb.core.View.extend({
     cdb.core.View.prototype.clean.call(this);
   },
 
+  _fixLinks: function() {
+
+    this.$el.find("a").each(function(i, link) {
+      $(this).attr("target", "_top");
+    });
+
+  },
+
   render: function() {
+
+    var self = this;
 
     this.$el.html(this.template(this.model.attributes));
 
-    var self = this;
+    this._fixLinks();
 
     setTimeout(function() {
       self._applyStyle();
