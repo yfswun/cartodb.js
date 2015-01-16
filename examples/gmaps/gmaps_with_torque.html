@@ -28,7 +28,7 @@
       function main() {
         var vizjson_url = "http://team.cartodb.com/api/v2/viz/2f24a22c-9ce7-11e4-a6a4-0e853d047bba/viz.json";
         cartodb.createVis("map", vizjson_url, { share: true, title: true, description: true, search: true
-            , gmaps_base_type: 'roadmap'
+            , gmaps_base_type: 'dark_roadmap'
         })
         .done(function(vis, layers) {
         });
