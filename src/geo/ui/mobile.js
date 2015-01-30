@@ -119,7 +119,12 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
     this.hasLayerSelector = false;
 
-    this.hasSlides = this.options.slides_data ? true : false;
+    this.slides_data   = this.options.slides_data;
+    this.visualization = this.options.visualization;
+
+    if (this.visualization) {
+      this.slides      = this.visualization.slides;
+    }
 
     this.mobileEnabled = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -144,13 +149,13 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
   _selectOverlays: function() {
 
-    if (this.hasSlides && this.options.slides) { // if there are slides…
+    if (this.slides && this.slides_data) { // if there are slides…
 
-      var state = this.options.slides.state();
+      var state = this.slides.state();
 
       if (state == 0) this.overlays = this.options.overlays; // first slide == master vis
       else {
-        this.overlays = this.options.slides_data[state - 1].overlays;
+        this.overlays = this.slides_data[state - 1].overlays;
       }
     } else { // otherwise we load the regular overlays
       this.overlays = this.options.overlays;
@@ -659,7 +664,7 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
         show_description = true;
       }
 
-      if (this.hasSlides) {
+      if (this.slides) {
         has_header = true;
       }
 
@@ -786,14 +791,15 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
   _renderSlidesController: function() {
 
-    if (this.hasSlides) {
+    if (this.slides) {
 
       this.$el.addClass("with-slides");
 
       this.slidesController = new cdb.geo.ui.SlidesController({
         show_counter: true,
         transitions: this.options.transitions,
-        slides: this.options.slides
+        visualization: this.options.visualization,
+        slides: this.slides
       });
 
       this.$el.append(this.slidesController.render().$el);
