@@ -134,6 +134,8 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
     this._setupModel();
 
+    this.mapView.bind('newLayerView', this._addLoading, this);
+
     window.addEventListener('orientationchange', _.bind(this.doOnOrientationChange, this));
 
     this._addWheelEvent();
@@ -322,6 +324,46 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
     }
 
+  },
+
+  _addLoading: function (layerView) {
+    if (layerView) {
+      var self = this;
+
+      var loadingTiles = function() {
+        self.loadingTiles();
+      };
+
+      var loadTiles = function() {
+        self.loadTiles();
+      };
+
+      layerView.bind('loading', loadingTiles);
+      layerView.bind('load',    loadTiles);
+    }
+  },
+
+  loadingTiles: function() {
+    if (this.loader) {
+      this.loader.show()
+    }
+    if(this.layersLoading === 0) {
+      this.trigger('loading');
+    }
+    this.layersLoading++;
+  },
+
+  loadTiles: function() {
+    if (this.loader) {
+      this.loader.hide();
+    }
+    this.layersLoading--;
+    // check less than 0 because loading event sometimes is
+    // thrown before visualization creation
+    if(this.layersLoading <= 0) {
+      this.layersLoading = 0;
+      this.trigger('load');
+    }
   },
 
   _onChangeLayerCount: function() {
@@ -532,18 +574,18 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
   _addZoom: function() {
 
     var template = cdb.core.Template.compile('\
-    <a href="#zoom_in" class="zoom_in">+</a>\
-    <a href="#zoom_out" class="zoom_out">-</a>\
-    <div class="info"></div>', 'mustache'
-    );
+                                             <a href="#zoom_in" class="zoom_in">+</a>\
+                                             <a href="#zoom_out" class="zoom_out">-</a>\
+                                             <div class="info"></div>', 'mustache'
+                                            );
 
-    var zoom = new cdb.geo.ui.Zoom({
-      model: this.options.map,
-      template: template
-    });
+                                            var zoom = new cdb.geo.ui.Zoom({
+                                              model: this.options.map,
+                                              template: template
+                                            });
 
-    this.$el.append(zoom.render().$el);
-    this.$el.addClass("with-zoom");
+                                            this.$el.append(zoom.render().$el);
+                                            this.$el.addClass("with-zoom");
 
   },
 
@@ -551,11 +593,11 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
 
     var template = cdb.core.Template.compile('<div class="loader"></div>', 'mustache');
 
-    var loader = new cdb.geo.ui.TilesLoader({
+    this.loader = new cdb.geo.ui.TilesLoader({
       template: template
     });
 
-    this.$el.append(loader.render().$el);
+    this.$el.append(this.loader.render().$el);
     this.$el.addClass("with-loader");
 
   },
@@ -574,22 +616,22 @@ cdb.geo.ui.Mobile = cdb.core.View.extend({
     this.hasSearch = true;
 
     var template = cdb.core.Template.compile('\
-      <form>\
-      <span class="loader"></span>\
-      <input type="text" class="text" placeholder="Search for places..." value="" />\
-      <input type="submit" class="submit" value="" />\
-      </form>\
-      ', 'mustache'
-    );
+                                             <form>\
+                                             <span class="loader"></span>\
+                                             <input type="text" class="text" placeholder="Search for places..." value="" />\
+                                             <input type="submit" class="submit" value="" />\
+                                             </form>\
+                                             ', 'mustache'
+                                            );
 
-    var search = new cdb.geo.ui.Search({
-      template: template,
-      model: this.mapView.map
-    });
+                                            var search = new cdb.geo.ui.Search({
+                                              template: template,
+                                              model: this.mapView.map
+                                            });
 
-    this.$el.find(".aside").prepend(search.render().$el);
-    this.$el.find(".cartodb-searchbox").show();
-    this.$el.addClass("with-search");
+                                            this.$el.find(".aside").prepend(search.render().$el);
+                                            this.$el.find(".cartodb-searchbox").show();
+                                            this.$el.addClass("with-search");
 
   },
 
