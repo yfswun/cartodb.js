@@ -1,8 +1,155 @@
 describe("Image", function() {
 
+  var layers = {};
+
   beforeEach(function() {
     var img = $('<img id="image" />');
     $("body").append(img);
+
+    this._generateTestStaticImage = function(json) {
+
+      StaticImage.prototype._requestLayerGroupID = function() {
+
+        //this.imageOptions.layergroupid = data.layergroupid;
+        //this.cdn_url = data.cdn_url;
+
+        this.queue.flush(this);
+      };
+
+      StaticImage.prototype.load = function(vizjson, options) {
+
+        this.queue = new Queue;
+        this.no_cdn = options.no_cdn;
+        this.userOptions = options;
+
+        options = _.defaults({ vizjson: vizjson, temp_id: "s" + this._getUUID() }, this.defaults);
+
+        this.imageOptions = options;
+
+        this._onVisLoaded(json); 
+
+      };
+
+    };
+
+    layers.cartodb = {
+      id: "5fcf9b4c-9d54-4458-b8b0-9a38c0791e8d",
+      parent_id: null,
+      children: [],
+      type: "CartoDB",
+      infowindow: {
+        fields: [{
+          name: "date",
+          title: true,
+          position: 1
+        },
+        {
+          name: "day",
+          title: true,
+          position: 2
+        }
+        ],
+        template_name: "table/views/infowindow_light",
+        template: "template",
+        alternative_names: {},
+        width: 226,
+        maxHeight: 180
+      },
+      tooltip: null,
+      legend: null,
+      order: 1,
+      visible: true,
+      options: {
+        sql: "select * from crashes_2007_2009_intensity",
+        layer_name: "crashes_2007_2009_intensity",
+        cartocss: "cartocss",
+        cartocss_version: "2.1.1",
+        interactivity: "cartodb_id",
+        table_name: "\"\".",
+        dynamic_cdn: false
+      }};
+
+      layers.tiled  = {
+      options:{
+        visible:true,
+        type:"Tiled",
+        urlTemplate:"http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        subdomains:"1234",
+        name:"Positron",
+        className:"positron_rainbow",
+        attribution: "attribution"
+      },
+      infowindow:null,
+      tooltip:null,
+      id:"12345",
+      order:0,
+      parent_id:null,
+      children:[],
+      type:"tiled"
+    };
+
+    layers.namedmap = {
+      type:"namedmap",
+      order:1,
+      options:{
+        type:"namedmap",
+        user_name:"documentation",
+        tiler_protocol:"https",
+        tiler_domain:"cartodb.com",
+        tiler_port:"443",
+        cdn_url:{
+          http:"api.cartocdn.com",
+          https:"cartocdn.global.ssl.fastly.net"
+        },
+        dynamic_cdn:false,
+        named_map:{
+          name:"tpl_1234567889X",
+          stat_tag: "123456789X",
+          params:{
+            layer0:1
+          },
+          layers:[
+            {
+            layer_name:"untitled_table_5",
+            interactivity:"cartodb_id",
+            visible:true
+          }
+          ]
+        }
+      }
+    };
+
+    this._getDefaultJSON = function(layers) {
+
+      return {
+        id: "123456789X",
+        version:"0.1.0",
+        title: "title",
+        likes:0,
+        description:null,
+        scrollwheel: false,
+        legends: true,
+        url: null,
+        map_provider: "leaflet",
+        bounds:[
+          [0.0, 0.0],
+          [0.0, 0.0]
+        ],
+        center: "[30, 0]",
+        zoom: 3,
+        updated_at:"2015-03-31T08:21:18+00:00",
+        layers: layers,
+        overlays: null,
+        prev:null,
+        next:null,
+        transition_options:{
+          time:0
+        },
+        auth_tokens:[
+          "my_auth_token"
+        ]
+      }
+    };
   });
 
   afterEach(function() {
@@ -435,30 +582,19 @@ describe("Image", function() {
 
   it("should send the auth_tokens", function(done) {
 
-    var vizjson = "http://documentation.cartodb.com/api/v2/viz/e11db0aa-d77e-11e4-9039-0e853d047bba/viz.json"
-    var json = {"id":"e11db0aa-d77e-11e4-9039-0e853d047bba","version":"0.1.0","title":"password_protected_map","likes":0,"description":null,"scrollwheel":false,"legends":true,"url":null,"map_provider":"leaflet","bounds":[[0.0,0.0],[0.0,0.0]],"center":"[30, 0]","zoom":3,"updated_at":"2015-03-31T08:21:18+00:00","layers":[{"options":{"visible":true,"type":"Tiled","urlTemplate":"http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png","subdomains":"1234","name":"Positron","className":"positron_rainbow","attribution":"\u00a9 <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors \u00a9 <a href=\"http://cartodb.com/attributions#basemaps\">CartoDB</a>"},"infowindow":null,"tooltip":null,"id":"c850d654-ab61-441d-9860-b3c2e42424fb","order":0,"parent_id":null,"children":[],"type":"tiled"},{"type":"namedmap","order":1,"options":{"type":"namedmap","user_name":"documentation","tiler_protocol":"https","tiler_domain":"cartodb.com","tiler_port":"443","cdn_url":{"http":"api.cartocdn.com","https":"cartocdn.global.ssl.fastly.net"},"dynamic_cdn":false,"named_map":{"name":"tpl_e11db0aa_d77e_11e4_9039_0e853d047bba","stat_tag":"e11db0aa-d77e-11e4-9039-0e853d047bba","params":{"layer0":1},"layers":[{"layer_name":"untitled_table_5","interactivity":"cartodb_id","visible":true}]}}}],"overlays":[{"type":"logo","order":9,"options":{"display":true,"x":10,"y":40},"template":""},{"type":"loader","order":8,"options":{"display":true,"x":20,"y":150},"template":"<div class=\"loader\" original-title=\"\"></div>"},{"type":"zoom","order":6,"options":{"display":true,"x":20,"y":20},"template":"<a href=\"#zoom_in\" class=\"zoom_in\">+</a> <a href=\"#zoom_out\" class=\"zoom_out\">-</a>"},{"type":"search","order":3,"options":{"display":true,"x":60,"y":20},"template":""},{"type":"share","order":2,"options":{"display":true,"x":20,"y":20},"template":""}],"prev":null,"next":null,"transition_options":{"time":0},"auth_tokens":["e900fe76cc3c1eed4fc018d027d82c8b0e59b2c484d1941954f34b4818a5d660"]}
+    var vizjson = "http://url/api/v2/viz/123456789X/viz.json"
+    var l = [layers.tiled, layers.named_map];
+    var json = this._getDefaultJSON(l);
+    json.auth_tokens = ["my_auth_token"];
 
-    StaticImage.prototype.load = function(vizjson, options) {
-
-      this.queue = new Queue;
-
-      this.no_cdn = options.no_cdn;
-
-      this.userOptions = options;
-
-      options = _.defaults({ vizjson: vizjson, temp_id: "s" + this._getUUID() }, this.defaults);
-
-      this.imageOptions = options;
-
-      this._onVisLoaded(json); // do the callback
-
-    };
+    this._generateTestStaticImage(json);
 
     var image = cartodb.Image(vizjson).size(400, 300);
 
     image.getUrl(function(err, url) {
+      debugger;
       expect(image.options.layers.layers[1].options.auth_tokens.length > 0).toBe(true);
-      expect(image.options.layers.layers[1].options.auth_tokens[0]).toBe("e900fe76cc3c1eed4fc018d027d82c8b0e59b2c484d1941954f34b4818a5d660");
+      expect(image.options.layers.layers[1].options.auth_tokens[0]).toBe("my_auth_token");
       done();
     });
 
