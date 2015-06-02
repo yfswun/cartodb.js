@@ -4,7 +4,7 @@
     <title>GMaps Satellite basemap | CartoDB.js</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
-    <link rel="shortcut icon" href="http://cartodb.com/assets/favicon.ico" />
+    <link rel="shortcut icon" href="https://cartodb.com/favicon.ico" />
     <style>
       html, body, #map {
         height: 100%;
@@ -13,20 +13,20 @@
       }
     </style>
 
-    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.11/themes/css/cartodb.css" />
+    <link rel="stylesheet" href="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.14/themes/css/cartodb.css" />
   </head>
   <body>
     <div id="map"></div>
 
     <!-- include google maps library -->
-    <script type="text/javascript" src="http://www.maps.google.com/maps/api/js?sensor=false&v=3.12"></script>
+    <script type="text/javascript" src="https://www.maps.google.com/maps/api/js?sensor=false&v=3.12"></script>
 
     <!-- include cartodb.js library -->
-    <script src="http://libs.cartocdn.com.s3.amazonaws.com/cartodb.js/v3/3.11/cartodb.js"></script>
+    <script src="https://cartodb-libs.global.ssl.fastly.net/cartodb.js/v3/3.14/cartodb.js"></script>
 
     <script>
       function main() {
-        var vizjson_url = "http://team.cartodb.com/api/v2/viz/7fff1080-f64b-11e3-82d4-0e230854a1cb/viz.json";
+        var vizjson_url = "https://team.cartodb.com/api/v2/viz/7fff1080-f64b-11e3-82d4-0e230854a1cb/viz.json";
         cartodb.createVis("map", vizjson_url, { scrollwheel: false
             , gmaps_base_type: 'satellite', zoom: 3
         });
