@@ -296,7 +296,7 @@ function guessMap(sql, tableName, column, stats) {
       var visFunction = CSS.choropleth;
       var properties = getMethodProperties(stats);
 
-      if (stats.count < 200 && geometryType === 'point'){
+      if (geometryType === 'point'){
         visualizationType = "bubble";
         visFunction = CSS.bubble;
       }
