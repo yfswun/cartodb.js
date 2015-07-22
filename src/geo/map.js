@@ -548,7 +548,7 @@ cdb.geo.Map = cdb.core.Model.extend({
     } while (zoomNotFound && zoom <= maxZoom);
 
     if (zoomNotFound) {
-      return maxZoom;
+      return null;
     }
 
     return zoom - 1;
