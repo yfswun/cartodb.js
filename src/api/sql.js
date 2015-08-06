@@ -379,6 +379,7 @@
            '       sum(case when COALESCE(NULLIF({{column}},\'\')) is null then 1 else 0 end)::numeric as null_count, ',
            '       sum(case when COALESCE(NULLIF({{column}},\'\')) is null then 1 else 0 end)::numeric / count(*)::numeric as null_ratio, ',
            // '       CDB_DistinctMeasure(array_agg({{column}}::text)) as cat_weight ',
+           '       max(char_length({{column}})) as max_length,',
            '       (SELECT max(cumperc) weight FROM c) As skew ',
            'from ({{sql}}) __wrap',
         '),',
@@ -425,7 +426,8 @@
           null_count: row.null_count,
           null_ratio: row.null_ratio,
           skew: row.skew,
-          weight: weight
+          weight: weight,
+          max_length: max_length
         });
       });
   }
