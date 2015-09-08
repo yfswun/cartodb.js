@@ -25,6 +25,13 @@ var COLOR_SCHEMAS = {
   'pink': ['#F1EEF6', '#D4B9DA', '#C994C7', '#DF65B0', '#E7298A', '#CE1256', '#91003F']
 }
 
+var CARTO_CSS_GENERATORS = {
+  'category': 'CategoryCSSGenerator',
+  'bubble': 'BubbleCSSGenerator'
+}
+
+var generators = {};
+
 var LayerAdapter = function(layer, sublayerIndex) {
   this._sublayer = layer.getSubLayer(sublayerIndex);
   this.tableName = this._sublayer.layer_name;
@@ -34,16 +41,48 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
   var columnName = options.columnName;
   var colorSchema = options.colorSchema;
 
-  generateCartoCSS({
+  var generatorClass = CARTO_CSS_GENERATORS[visualizationType];
+  if (!generators[generatorClass]) {
+    throw new Error('The type of visualization "' + visualizationType + '" is not supported');
+  }
+  var generator = new generators[generatorClass];
+
+  generator.generateCartoCSS(_.defaults(options, {
     visualizationType: visualizationType,
     geometryType: 'point',
     tableName: 'untitled_table_7',
     columnName: columnName,
     colorSchema: colorSchema,
     success: this.setCartoCSS.bind(this)
-  });
+  }));
 }
 
 LayerAdapter.prototype.setCartoCSS = function(cartoCSS) {
   this._sublayer.setCartoCSS(cartoCSS);
+  console.log(this._sublayer.getCartoCSS());
 }
+
+validatePresenceOfRequiredOptions = function(options) {
+  for (var i in this.REQUIRED_OPTIONS) {
+    var option = this.REQUIRED_OPTIONS[i];
+    if (!options[option]) {
+      throw new Error(option + " is required");
+    }
+  }
+}
+
+SQLApiRequest = function(sql, options) {
+  var method = options.method || 'POST';
+  var successCallback = options.success;
+  var errorCallback = options.error;
+
+  $.ajax({
+    type: method,
+    data: "q=" + sql + "&api_key=" + API_KEY,
+    url: API_URL,
+    success: successCallback,
+    error: errorCallback
+  });
+}
+
+

@@ -25,49 +25,44 @@
 //  - Stroke width
 //  - Stroke opacity
 //
+// TODO: Generate the right cartoCSS for the selected geometryType
+// TODO: Allow more customization (fill, stroke, ...)
+// TODO: What if the column doesn't exist?
+//
 
-var REQUIRED_OPTIONS = ['columnName', 'colorSchema'];
-
-validatePresenceOfRequiredOptions = function(options) {
-  for (var i in REQUIRED_OPTIONS) {
-    var option = REQUIRED_OPTIONS[i];
-    if (!options[option]) {
-      throw new Error(option + " is required");
-    }    
-  }
+CategoryCSSGenerator = function() {
+  this.REQUIRED_OPTIONS = ['columnName'];
+  this.MAX_CATEGORIES = 10;
 }
 
-var generateCartoCSS = function(options) {
+CategoryCSSGenerator.prototype.generateCartoCSS = function(options) {
   validatePresenceOfRequiredOptions(options);
 
   var visualizationType = options.visualizationType;
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var columnName = options.columnName;
-  var colorSchema = options.colorSchema || 'aqua';
+  var colorSchema = options.colorSchema || 'blue';
   var successCallback = options.success;
 
-  fetchCategories({
+  this._fetchCategories({
     column: columnName,
     tableName: tableName,
     success: function(data) {
       var categories = data.categories;
 
       var css = [];
-      css.push(cartoCSSHeader(visualizationType));
-      css.push(cartoCSSForTable(geometryType, tableName));
-
-      for (var i in categories) {
-        css.push(cartoCSSForCategory(tableName, columnName, categories[i], COLOR_SCHEMAS[colorSchema][i]));
-      }
+      css.push(this._cartoCSSHeader(visualizationType));
+      css.push(this._cartoCSSForTable(geometryType, tableName));
+      css.push(this._cartoCSSForCategories(categories, tableName, columnName, colorSchema));
 
       successCallback(css.join("\n"));
-    }
+    }.bind(this)
   })
 }
 
-var fetchCategories = function(options) {
-  var MAX_VALUES = 10;
+CategoryCSSGenerator.prototype._fetchCategories = function(options) {
+
   var column = options.column;
   var tableName = options.tableName;
   var successCallback = options.success;
@@ -81,42 +76,38 @@ var fetchCategories = function(options) {
   var sql = SQLTemplate({
     sql: encodeURIComponent("select * from " + tableName),
     column: column,
-    max_values: MAX_VALUES + 1
+    max_values: this.MAX_CATEGORIES + 1
   })
 
   SQLApiRequest(sql, {
     success: function(data) {
+      var categories = _.compact(_(data.rows).pluck(column));
+
+      if (categories.length === 0) {
+        throw new Error('The specified column is empty');
+      }
+
+      // TODO: We're not using this right now
+      var fieldType = data.fields[column].type || 'string';
       successCallback({
-        type: data.fields[column].type || 'string',
-        categories: _(data.rows).pluck(column)
+        type: fieldType,
+        categories: categories
       });
     },
-    error: function() {}
+    error: function() {
+      errorCallback();
+    }
   });
 }
 
-var SQLApiRequest = function(sql, options) {
-  var method = options.method || 'POST';
-  var successCallback = options.success;
-  var errorCallback = options.error;
-
-  $.ajax({
-    type: method,
-    data: "q=" + sql + "&api_key=" + API_KEY,
-    url: API_URL,
-    success: successCallback,
-    error: errorCallback
-  });  
-}
-
-var cartoCSSHeader = function(style) {
+CategoryCSSGenerator.prototype._cartoCSSHeader = function(style) {
   var css = [];
   css.push("/** " + style + "**/\n\n");
 
   return css.join("\n");
 }
 
-var cartoCSSForTable = function(geometryType, tableName) {
+CategoryCSSGenerator.prototype._cartoCSSForTable = function(geometryType, tableName) {
   var css = [];
   css.push('#' + tableName + '{');
   css.push('  marker-fill-opacity: 0.9;');
@@ -132,7 +123,16 @@ var cartoCSSForTable = function(geometryType, tableName) {
   return css.join("\n");
 }
 
-var cartoCSSForCategory = function(tableName, columnName, category, color) {  
+CategoryCSSGenerator.prototype._cartoCSSForCategories = function(categories, tableName, columnName, colorSchema) {
+  var css = [];
+  for (var i in categories) {
+    css.push(this._cartoCSSForCategory(tableName, columnName, categories[i], COLOR_SCHEMAS[colorSchema][i]));
+  }
+
+  return css.join("\n");
+}
+
+CategoryCSSGenerator.prototype._cartoCSSForCategory = function(tableName, columnName, category, color) {
   var css = [];
   css.push('#' + tableName + '[' + columnName + '="' + category + '"] {');
   css.push('  marker-fill: ' + color + ';');
@@ -140,3 +140,5 @@ var cartoCSSForCategory = function(tableName, columnName, category, color) {
 
   return css.join("\n");
 }
+
+generators.CategoryCSSGenerator = CategoryCSSGenerator;
