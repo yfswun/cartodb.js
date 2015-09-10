@@ -39,7 +39,9 @@ var LayerAdapter = function(layer, sublayerIndex) {
 
 LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
   var columnName = options.columnName;
-  var colorSchema = options.colorSchema;
+  var layerName = 'Untitled Table 7'; // The title of the legend
+  var tableName = 'untitled_table_7';
+  var geometryType = 'point';
 
   var generatorClass = CARTO_CSS_GENERATORS[visualizationType];
   if (!generators[generatorClass]) {
@@ -47,14 +49,46 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
   }
   var generator = new generators[generatorClass];
 
-  generator.generateCartoCSS(_.defaults(options, {
-    visualizationType: visualizationType,
-    geometryType: 'point',
-    tableName: 'untitled_table_7',
-    columnName: columnName,
-    colorSchema: colorSchema,
-    success: this.setCartoCSS.bind(this)
-  }));
+  if (visualizationType === 'category') {
+    var colorSchema = options.colorSchema;
+
+    fetchCategories({
+      tableName: 'untitled_table_7',
+      columnName: columnName,
+      success: function(categories) {
+        var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
+          visualizationType: visualizationType,
+          geometryType: geometryType,
+          tableName: tableName,
+          columnName: columnName,
+          colorSchema: colorSchema,
+          categories: categories
+        }));
+        this.setCartoCSS(cartoCSS);
+      }.bind(this),
+      error: function() {}
+    })
+  } else if (visualizationType === 'bubble') {
+    var clusteringMethod = options.clusteringMethod;
+
+    fetchQuartiles({
+      columnName: columnName,
+      tableName: tableName,
+      clusteringMethod: clusteringMethod,
+      success: function(quartiles, points) {
+        var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
+          visualizationType: visualizationType,
+          geometryType: geometryType,
+          tableName: tableName,
+          columnName: columnName,
+          quartiles: quartiles,
+          points: points
+        }));
+        this.setCartoCSS(cartoCSS);
+      }.bind(this),
+      error: function() {}
+    })
+  }
 }
 
 LayerAdapter.prototype.setCartoCSS = function(cartoCSS) {
@@ -85,4 +119,77 @@ SQLApiRequest = function(sql, options) {
   });
 }
 
+
+var fetchCategories = function(options) {
+
+  var MAX_CATEGORIES = 10;
+  var columnName = options.columnName;
+  var tableName = options.tableName;
+  var successCallback = options.success;
+  var errorCallback = options.error;
+
+  var SQLTemplate = _.template('\
+    SELECT <%= column %>, count(<%= column %>) FROM (<%= sql %>) _table_sql ' +
+    'GROUP BY <%= column %> ORDER BY count DESC LIMIT <%= max_values %> '
+  );
+
+  var sql = SQLTemplate({
+    sql: encodeURIComponent("select * from " + tableName),
+    column: columnName,
+    max_values: MAX_CATEGORIES + 1
+  })
+
+  SQLApiRequest(sql, {
+    success: function(data) {
+
+      if (data.rows.length === 0) {
+        throw new Error('The specified column is empty');
+      }
+
+      var categories = _.compact(data.rows).map(function(row){return {
+        name: row.description,
+        count: row.count
+      }})
+
+      successCallback(categories);
+    },
+    error: function() {
+      errorCallback();
+    }
+  });
+}
+
+var fetchQuartiles = function(options) {
+  var POINTS = 10;
+  var CLUSTERING_FUNCTIONS = {
+    'quantile': 'CDB_QuantileBins',
+    'jenks': 'CDB_JenksBins'
+  }
+
+  var columnName = options.columnName;
+  var tableName = options.tableName;
+  var clusteringMethod = options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);
+  var successCallback = options.success;
+  var errorCallback = options.error;
+
+  var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
+
+  var sql = SQLTemplate({
+    slots: POINTS,
+    sql: encodeURIComponent("select * from " + tableName),
+    column: columnName,
+    functionName: CLUSTERING_FUNCTIONS[clusteringMethod],
+    simplify_fn: 'distinct'
+  })
+
+  SQLApiRequest(sql, {
+    success: function(data) {
+      var buckets = _(data.rows).pluck('buckets');
+      successCallback(buckets, POINTS);
+    },
+    error: function() {
+      errorCallback();
+    }
+  });
+}
 

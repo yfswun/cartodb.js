@@ -21,12 +21,6 @@
 
 BubbleCSSGenerator = function() {
   this.REQUIRED_OPTIONS = ['columnName'];
-  this.POINTS = 10;
-
-  this.CLUSTERING_FUNCTION = {
-    'quantile': 'CDB_QuantileBins',
-    'jenks': 'CDB_JenksBins'
-  }
 }
 
 BubbleCSSGenerator.prototype.generateCartoCSS = function(options) {
@@ -36,51 +30,17 @@ BubbleCSSGenerator.prototype.generateCartoCSS = function(options) {
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var columnName = options.columnName;
-  var clusteringMethod = options.clusteringMethod || Object.keys(this.CLUSTERING_FUNCTION)[0];
-  var successCallback = options.success;
 
-  this._fetchQuartiles({
-    column: columnName,
-    tableName: tableName,
-    clusteringMethod: clusteringMethod,
-    success: function(quartiles) {
-      var css = [];
+  var quartiles = options.quartiles;
+  var points = options.points;
 
-      css.push(this._cartoCSSHeader(visualizationType));
-      css.push(this._cartoCSSForTable(geometryType, tableName));
-      css.push(this._cartoCSSForBubbles(tableName, columnName, quartiles));
+  var css = [];
 
-      successCallback(css.join("\n"));
-    }.bind(this)
-  })
-}
+  css.push(this._cartoCSSHeader(visualizationType));
+  css.push(this._cartoCSSForTable(geometryType, tableName));
+  css.push(this._cartoCSSForBubbles(tableName, columnName, quartiles, points));
 
-BubbleCSSGenerator.prototype._fetchQuartiles = function(options) {
-  var column = options.column;
-  var tableName = options.tableName;
-  var clusteringMethod = options.clusteringMethod;
-  var successCallback = options.success;
-  var errorCallback = options.error;
-
-  var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
-
-  var sql = SQLTemplate({
-    slots: this.POINTS,
-    sql: encodeURIComponent("select * from " + tableName),
-    column: column,
-    functionName: this.CLUSTERING_FUNCTION[clusteringMethod],
-    simplify_fn: 'distinct'
-  })
-
-  SQLApiRequest(sql, {
-    success: function(data) {
-      var buckets = _(data.rows).pluck('buckets');
-      successCallback(buckets);
-    },
-    error: function() {
-      errorCallback();
-    }
-  });
+  return css.join("\n");
 }
 
 BubbleCSSGenerator.prototype._cartoCSSHeader = function(style) {
@@ -108,12 +68,12 @@ BubbleCSSGenerator.prototype._cartoCSSForTable = function(geometryType, tableNam
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._cartoCSSForBubbles = function(tableName, columnName, quartiles) {
+BubbleCSSGenerator.prototype._cartoCSSForBubbles = function(tableName, columnName, quartiles, points) {
   var css = [];
-  for(var i = this.POINTS - 1; i >= 0; --i) {
+  for(var i = points - 1; i >= 0; --i) {
     if(quartiles[i]) {
       css.push("#" + tableName +" [" + columnName + " <= " + quartiles[i] + "] {");
-      css.push("   marker-width: " + this._getBubbleWidth(i) + ";");
+      css.push("   marker-width: " + this._getBubbleWidth(i, points) + ";");
       css.push('}');
     }
   }
@@ -121,10 +81,10 @@ BubbleCSSGenerator.prototype._cartoCSSForBubbles = function(tableName, columnNam
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._getBubbleWidth = function(index) {
+BubbleCSSGenerator.prototype._getBubbleWidth = function(index, points) {
   var minBubbleWidth = 10;
   var maxBubbleWidth = 25;
-  var t = index / (this.POINTS - 1);
+  var t = index / (points - 1);
   var width = minBubbleWidth + t * (maxBubbleWidth - minBubbleWidth);
 
   return width.toFixed(1);

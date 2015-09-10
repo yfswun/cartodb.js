@@ -32,7 +32,6 @@
 
 CategoryCSSGenerator = function() {
   this.REQUIRED_OPTIONS = ['columnName'];
-  this.MAX_CATEGORIES = 10;
 }
 
 CategoryCSSGenerator.prototype.generateCartoCSS = function(options) {
@@ -42,63 +41,18 @@ CategoryCSSGenerator.prototype.generateCartoCSS = function(options) {
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var columnName = options.columnName;
+
   var colorSchema = options.colorSchema || 'blue';
-  var successCallback = options.success;
+  var categories = options.categories;
 
-  this._fetchCategories({
-    column: columnName,
-    tableName: tableName,
-    success: function(data) {
-      var categories = data.categories;
+  var css = [];
+  css.push(this._cartoCSSHeader(visualizationType));
+  css.push(this._cartoCSSForTable(geometryType, tableName));
+  css.push(this._cartoCSSForCategories(categories, tableName, columnName, colorSchema));
 
-      var css = [];
-      css.push(this._cartoCSSHeader(visualizationType));
-      css.push(this._cartoCSSForTable(geometryType, tableName));
-      css.push(this._cartoCSSForCategories(categories, tableName, columnName, colorSchema));
-
-      successCallback(css.join("\n"));
-    }.bind(this)
-  })
+  return css.join("\n");
 }
 
-CategoryCSSGenerator.prototype._fetchCategories = function(options) {
-
-  var column = options.column;
-  var tableName = options.tableName;
-  var successCallback = options.success;
-  var errorCallback = options.error;
-
-  var SQLTemplate = _.template('\
-    SELECT <%= column %>, count(<%= column %>) FROM (<%= sql %>) _table_sql ' +
-    'GROUP BY <%= column %> ORDER BY count DESC LIMIT <%= max_values %> '
-  );
-
-  var sql = SQLTemplate({
-    sql: encodeURIComponent("select * from " + tableName),
-    column: column,
-    max_values: this.MAX_CATEGORIES + 1
-  })
-
-  SQLApiRequest(sql, {
-    success: function(data) {
-      var categories = _.compact(_(data.rows).pluck(column));
-
-      if (categories.length === 0) {
-        throw new Error('The specified column is empty');
-      }
-
-      // TODO: We're not using this right now
-      var fieldType = data.fields[column].type || 'string';
-      successCallback({
-        type: fieldType,
-        categories: categories
-      });
-    },
-    error: function() {
-      errorCallback();
-    }
-  });
-}
 
 CategoryCSSGenerator.prototype._cartoCSSHeader = function(style) {
   var css = [];
@@ -134,7 +88,7 @@ CategoryCSSGenerator.prototype._cartoCSSForCategories = function(categories, tab
 
 CategoryCSSGenerator.prototype._cartoCSSForCategory = function(tableName, columnName, category, color) {
   var css = [];
-  css.push('#' + tableName + '[' + columnName + '="' + category + '"] {');
+  css.push('#' + tableName + '[' + columnName + '="' + category.name + '"] {');
   css.push('  marker-fill: ' + color + ';');
   css.push('}');
 
