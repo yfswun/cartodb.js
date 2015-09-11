@@ -35,6 +35,8 @@ var generators = {};
 var LayerAdapter = function(layer, sublayerIndex) {
   this._sublayer = layer.getSubLayer(sublayerIndex);
   this.tableName = this._sublayer.layer_name;
+
+  this.requiredData = new Backbone.Model();
 }
 
 LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
@@ -49,25 +51,32 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
   }
   var generator = new generators[generatorClass];
 
+  // We need to only unbind the callback that was set on this method
+  this.requiredData.unbind('change');
+
   if (visualizationType === 'category') {
+
     var colorSchema = options.colorSchema;
 
     fetchCategories({
-      tableName: 'untitled_table_7',
+      tableName: tableName,
       columnName: columnName,
-      success: function(categories) {
-        var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
-          visualizationType: visualizationType,
-          geometryType: geometryType,
-          tableName: tableName,
-          columnName: columnName,
-          colorSchema: colorSchema,
-          categories: categories
-        }));
-        this.setCartoCSS(cartoCSS);
-      }.bind(this),
-      error: function() {}
+      data: this.requiredData
     })
+
+    this.requiredData.bind('change', function() {
+      var categories = this.data.get('items');
+      var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
+        visualizationType: visualizationType,
+        geometryType: geometryType,
+        tableName: tableName,
+        columnName: columnName,
+        colorSchema: colorSchema,
+        categories: categories
+      }));
+      this.setCartoCSS(cartoCSS);
+    }.bind(this));
+
   } else if (visualizationType === 'bubble') {
     var clusteringMethod = options.clusteringMethod;
 
@@ -75,19 +84,23 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
       columnName: columnName,
       tableName: tableName,
       clusteringMethod: clusteringMethod,
-      success: function(quartiles, points) {
-        var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
-          visualizationType: visualizationType,
-          geometryType: geometryType,
-          tableName: tableName,
-          columnName: columnName,
-          quartiles: quartiles,
-          points: points
-        }));
-        this.setCartoCSS(cartoCSS);
-      }.bind(this),
-      error: function() {}
+      data: this.requiredData
     })
+
+    this.requiredData.bind('change', function() {
+      var quartiles = this.data.get('items');
+      var points = this.data.get('points');
+
+      var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
+        visualizationType: visualizationType,
+        geometryType: geometryType,
+        tableName: tableName,
+        columnName: columnName,
+        quartiles: quartiles,
+        points: points
+      }));
+      this.setCartoCSS(cartoCSS);
+    }.bind(this));
   }
 }
 
@@ -125,8 +138,9 @@ var fetchCategories = function(options) {
   var MAX_CATEGORIES = 10;
   var columnName = options.columnName;
   var tableName = options.tableName;
-  var successCallback = options.success;
-  var errorCallback = options.error;
+  var dataModel = options.data;
+  // var successCallback = options.success;
+  // var errorCallback = options.error;
 
   var SQLTemplate = _.template('\
     SELECT <%= column %>, count(<%= column %>) FROM (<%= sql %>) _table_sql ' +
@@ -151,10 +165,11 @@ var fetchCategories = function(options) {
         count: row.count
       }})
 
-      successCallback(categories);
+      dataModel.set('items', categories);
+      // successCallback(categories);
     },
     error: function() {
-      errorCallback();
+      // errorCallback();
     }
   });
 }
@@ -169,8 +184,7 @@ var fetchQuartiles = function(options) {
   var columnName = options.columnName;
   var tableName = options.tableName;
   var clusteringMethod = options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);
-  var successCallback = options.success;
-  var errorCallback = options.error;
+  var dataModel = options.data;
 
   var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
 
@@ -185,10 +199,13 @@ var fetchQuartiles = function(options) {
   SQLApiRequest(sql, {
     success: function(data) {
       var buckets = _(data.rows).pluck('buckets');
-      successCallback(buckets, POINTS);
+      dataModel.set({
+        items:buckets,
+        points: POINTS
+      });
     },
     error: function() {
-      errorCallback();
+      // errorCallback();
     }
   });
 }
