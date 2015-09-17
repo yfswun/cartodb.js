@@ -10,7 +10,28 @@
         height: 100%;
         padding: 0;
         margin: 0;
+        font-family: sans-serif;
       }
+
+      .controls {
+        background: white;
+        position: absolute;
+        bottom: 28px;
+        right: 15px;
+        padding: 10px;
+      }
+
+      .controls a {
+        border-left: 1px solid #CDCDCD;
+        margin-left: 3px;
+        padding-left: 5px;
+      }
+      .controls a:first-child {
+        border-left: none;
+        margin-left: 0px;
+        padding-left: 0px;
+      }
+
     </style>
 
     <link rel="stylesheet" href="../dist/themes/css/cartodb.css" />
@@ -26,24 +47,29 @@
     <script src="../src/wadus/stylers/bubble_styler.js"></script>
     <script src="../src/wadus/stylers/category_styler.js"></script>
 
-
     <script>
       function main() {
         cartodb.createVis('map', 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json', {})
         .done(function(vis, layers) {
           var layer = new LayerAdapter(layers[1], 0);
 
-          layer.visualizeAs('category', {
-            columnName: 'description',
-            colorSchema: 'blue' // pink
-          });
-    
-          setTimeout(function() {
-            layer.visualizeAs('bubble', {
-              columnName: 'name',
-              clusteringMethod: 'jenks' // quantiles
-            })
-          }, 2000);
+          $('.js-controls a').click(function(event) {
+            event.preventDefault();
+
+            var visualizationType = $(this).data('visualization-type');
+
+            if (visualizationType == 'category') {
+              layer.visualizeAs('category', {
+                columnName: 'description',
+                colorSchema: 'blue' // pink
+              });
+            } else if (visualizationType == 'bubble') {
+              layer.visualizeAs('bubble', {
+                columnName: 'name',
+                clusteringMethod: 'jenks' // quantiles
+              })
+            }
+          })
         })
         .error(function(err) {
           console.log(err);
@@ -53,5 +79,10 @@
       var fn = function() { cartodb.load('../src/', main); }
       window.onload = fn;
     </script>
+    <div class="controls js-controls">
+      Visualization:
+      <a href="#" data-visualization-type="category">Category</a>
+      <a href="#" data-visualization-type="bubble">Bubble</a>
+    </div>
   </body>
 </html>
