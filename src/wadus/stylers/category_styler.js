@@ -1,15 +1,8 @@
 var CategoryStyler = function(options) {
-  this.options = this._parseOptions(options);
-}
-
-CategoryStyler.prototype._parseOptions = function(options) {
-  // TODO: Check if all required options are present and extract only the ones we need
-  return options;
+  this.options = options;
 }
 
 CategoryStyler.prototype.fetchRequiredData = function() {
-  var requiredData = new Backbone.Model({});
-
   var MAX_CATEGORIES = 10;
   var columnName = this.options.columnName;
   var tableName = this.options.tableName;
@@ -45,7 +38,7 @@ CategoryStyler.prototype.fetchRequiredData = function() {
       // successCallback(categories);
     },
     error: function() {
-      // errorCallback();
+      // TODO: Throw an error
     }
   });
 

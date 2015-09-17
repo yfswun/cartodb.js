@@ -1,10 +1,5 @@
 var BubbleStyler = function(options) {
-  this.options = this._parseOptions(options);
-}
-
-BubbleStyler.prototype._parseOptions = function(options) {
-  // TODO: Check if all required options are present and extract only the ones we need
-  return options;
+  this.options = options;
 }
 
 BubbleStyler.prototype.fetchRequiredData = function() {
@@ -41,7 +36,7 @@ BubbleStyler.prototype.fetchRequiredData = function() {
       });
     },
     error: function() {
-      // errorCallback();
+      // TODO: Throw an error
     }
   });
 
