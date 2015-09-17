@@ -1,8 +1,5 @@
 var LayerAdapter = function(layer, sublayerIndex) {
   this._sublayer = layer.getSubLayer(sublayerIndex);
-  this.tableName = this._sublayer.layer_name;
-
-  this.requiredData = new Backbone.Model();
 }
 
 LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
