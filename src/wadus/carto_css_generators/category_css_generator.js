@@ -2,26 +2,26 @@
 // CUSTOMIZABLE STUFF:
 // 
 // All geometries:
-// 
+//
 //  - Color of each category
-//  
+//
 // Point:
-// 
+//
 //  - Marker width
 //  - Marker fill opacity
 //  - Stroke width
 //  - Stroke color
 //  - Stroke opacity
-//  
+//
 // Polygon:
-// 
+//
 //  - Polygon fill opacity
 //  - Stroke width
 //  - Stroke color
 //  - Stroke opacity
-//  
+//
 // Line:
-// 
+//
 //  - Stroke width
 //  - Stroke opacity
 //
@@ -29,8 +29,7 @@
 // TODO: Allow more customization (fill, stroke, ...)
 // TODO: What if the column doesn't exist?
 //
-
-CategoryCSSGenerator = function() {
+var CategoryCSSGenerator = function() {
   this.REQUIRED_OPTIONS = ['columnName'];
 }
 
@@ -94,5 +93,3 @@ CategoryCSSGenerator.prototype._cartoCSSForCategory = function(tableName, column
 
   return css.join("\n");
 }
-
-generators.CategoryCSSGenerator = CategoryCSSGenerator;

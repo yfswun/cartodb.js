@@ -1,12 +1,12 @@
 //
 // REQUIREMENTS:
-// 
+//
 //  - Table must have a NUMERIC column
-//  
+//
 // CUSTOMIZABLE STUFF:
-// 
+//
 // All geometries:
-// 
+//
 //  - Quantification/clustering method: Jenks / Equal Interval / Heads-Tails / Quantile
 //  - Bubble Radius: min and max radius size
 //  - Bubble fill color
@@ -15,11 +15,11 @@
 //  - Stroke color
 //  - Stroke opacity
 //  - Composite operation: multiply, screen, overlay, darken, etc.
-//  
+//
 //  TODO: Should we fetch the schema to check if the table has a NUMERIC column?
 // 
 
-BubbleCSSGenerator = function() {
+var BubbleCSSGenerator = function() {
   this.REQUIRED_OPTIONS = ['columnName'];
 }
 
@@ -89,5 +89,3 @@ BubbleCSSGenerator.prototype._getBubbleWidth = function(index, points) {
 
   return width.toFixed(1);
 }
-
-generators.BubbleCSSGenerator = BubbleCSSGenerator;
