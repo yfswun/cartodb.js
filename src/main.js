@@ -65,7 +65,7 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
     })
 
     this.requiredData.bind('change', function() {
-      var categories = this.data.get('items');
+      var categories = this.requiredData.get('items');
       var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
         visualizationType: visualizationType,
         geometryType: geometryType,
@@ -88,8 +88,8 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
     })
 
     this.requiredData.bind('change', function() {
-      var quartiles = this.data.get('items');
-      var points = this.data.get('points');
+      var quartiles = this.requiredData.get('items');
+      var points = this.requiredData.get('points');
 
       var cartoCSS = generator.generateCartoCSS(_.defaults(options, {
         visualizationType: visualizationType,
