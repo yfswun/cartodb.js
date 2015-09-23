@@ -31,6 +31,7 @@ BubbleStyler.prototype.fetchRequiredData = function() {
     success: function(data) {
       var buckets = _(data.rows).pluck('buckets');
       requiredData.set({
+        type: 'quartiles',
         quartiles: buckets,
         points: POINTS
       });

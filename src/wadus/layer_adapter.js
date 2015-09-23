@@ -1,5 +1,9 @@
 var LayerAdapter = function(layer, sublayerIndex) {
   this._sublayer = layer.getSubLayer(sublayerIndex);
+
+  // Metadata that is the result of the data analysis that was required to
+  // display the layer in a certain way. This is used to render legends.
+  this.metadata = new Backbone.Model();
 }
 
 LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
@@ -16,11 +20,13 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
     throw new Error('The type of visualization "' + visualizationType + '" is not supported');
   }
 
-  var requiredData = styler.fetchRequiredData();
-  requiredData.bind('change', function() {
+  var metadata = styler.fetchRequiredData();
+  metadata.bind('change', function() {
+    metadata.unbind('change');
+    this.metadata.set(metadata.toJSON());
 
     // Generate the CSS
-    var cartoCSS = styler.generateCartoCSS(requiredData);
+    var cartoCSS = styler.generateCartoCSS(this.metadata);
     this.setCartoCSS(cartoCSS);
 
     // TODO: Generate the SQL

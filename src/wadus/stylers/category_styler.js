@@ -34,7 +34,10 @@ CategoryStyler.prototype.fetchRequiredData = function() {
         count: row.count
       }})
 
-      requiredData.set('categories', categories);
+      requiredData.set({
+        type: 'categories',
+        categories: categories
+      });
       // successCallback(categories);
     },
     error: function() {

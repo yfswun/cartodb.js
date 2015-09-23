@@ -32,6 +32,14 @@
         padding-left: 0px;
       }
 
+      .legend {
+        position: absolute;
+        bottom: 80px;
+        right: 15px;
+        background-color: white;
+        padding: 10px;
+      }
+
     </style>
 
     <link rel="stylesheet" href="../dist/themes/css/cartodb.css" />
@@ -47,12 +55,24 @@
     <script src="../src/wadus/stylers/bubble_styler.js"></script>
     <script src="../src/wadus/stylers/category_styler.js"></script>
     <script src="../src/wadus/layer_adapter.js"></script>
+    <script src="../src/wadus/legend_view.js"></script>
 
     <script>
       function main() {
         cartodb.createVis('map', 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json', {})
         .done(function(vis, layers) {
+
           var layer = new LayerAdapter(layers[1], 0);
+
+          // TODO: Move this!
+          var legendView = new LegendView({ model: layer.metadata });
+
+          document.body.appendChild(legendView.render().el);
+
+          layer.visualizeAs('category', {
+            columnName: 'description',
+            colorSchema: 'blue' // pink
+          });
 
           $('.js-controls a').click(function(event) {
             event.preventDefault();
