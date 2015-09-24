@@ -17,8 +17,7 @@
 //  - Composite operation: multiply, screen, overlay, darken, etc.
 //
 //  TODO: Should we fetch the schema to check if the table has a NUMERIC column?
-// 
-
+//
 var BubbleCSSGenerator = function() {
   this.REQUIRED_OPTIONS = ['columnName'];
 }

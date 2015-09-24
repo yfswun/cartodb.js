@@ -12,11 +12,8 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
     geometryType: 'point'
   })
 
-  if (visualizationType === 'category') {
-    var styler = new CategoryStyler(options);
-  } else if (visualizationType === 'bubble') {
-    var styler = new BubbleStyler(options);
-  } else {
+  var styler = this._getStylerFor(visualizationType, options);
+  if (!styler) {
     throw new Error('The type of visualization "' + visualizationType + '" is not supported');
   }
 
@@ -33,6 +30,18 @@ LayerAdapter.prototype.visualizeAs = function(visualizationType, options) {
     
     // TODO: Generate the legends
   }.bind(this));
+}
+
+LayerAdapter.prototype._getStylerFor = function(visualizationType, options) {
+  var styler;
+  if (visualizationType === 'category') {
+    styler = new CategoryStyler(options);
+  } else if (visualizationType === 'bubble') {
+    styler = new BubbleStyler(options);
+  }
+
+  // TODO: Register more stylers here
+  return styler;
 }
 
 LayerAdapter.prototype.setCartoCSS = function(cartoCSS) {
