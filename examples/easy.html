@@ -62,16 +62,16 @@
         cartodb.createVis('map', 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json', {})
         .done(function(vis, layers) {
 
-          var layer = new LayerAdapter(layers[1], 0);
+          // Layer is not what you might think...
+          var layer = layers[0];
 
-          // TODO: Move this!
+          // TODO: Move this somewhere else!
           var legendView = new LegendView({ model: layer.metadata });
-
-          document.body.appendChild(legendView.render().el);
+          legendView.render();
 
           layer.visualizeAs('category', {
             columnName: 'description',
-            colorSchema: 'blue' // pink
+            colorSchema: 'pink' // pink
           });
 
           $('.js-controls a').click(function(event) {

@@ -10,6 +10,11 @@ var LegendView = Backbone.View.extend({
   },
 
   render: function() {
+
+    if ($('.legend').length === 0) {
+      document.body.appendChild(this.el);
+    }
+
     this.$el.html('');
     var metadataType = this.model.get('type');
     if (metadataType === 'categories') {

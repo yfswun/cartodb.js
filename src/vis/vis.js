@@ -1322,7 +1322,14 @@ var Vis = cdb.core.View.extend({
   },
 
   done: function(fn) {
-    return this.bind('done', fn);
+    return this.bind('done', function(vis, layers) {
+      var adaptedLayer = new LayerAdapter(layers[1], 0);
+
+      // This is just a hack to be able to access/use the new layer interface
+      // from good old regular layers
+      layers[1]._newLayer = adaptedLayer;
+      fn(vis, [adaptedLayer]);
+    });
   },
 
   // public methods
