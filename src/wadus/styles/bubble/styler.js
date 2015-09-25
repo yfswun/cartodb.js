@@ -1,8 +1,12 @@
 var BubbleStyler = function(options) {
-  this.options = options;
+  this.columnName = options.columnName;
+  this.tableName = options.tableName;
+  this.clusteringMethod = options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);
+
+  this.metadata = new Backbone.Model();
 }
 
-BubbleStyler.prototype.fetchRequiredData = function() {
+BubbleStyler.prototype.fetchRequiredData = function(callback) {
   var POINTS = 10;
 
   // TODO: Move this somewhere else
@@ -11,55 +15,46 @@ BubbleStyler.prototype.fetchRequiredData = function() {
     'jenks': 'CDB_JenksBins'
   }
 
-  var columnName = this.options.columnName;
-  var tableName = this.options.tableName;
-  var clusteringMethod = this.options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);
-  var dataModel = this.options.data;
-
   var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
 
   var sql = SQLTemplate({
     slots: POINTS,
-    sql: encodeURIComponent("select * from " + tableName),
-    column: columnName,
-    functionName: CLUSTERING_FUNCTIONS[clusteringMethod],
+    sql: encodeURIComponent("select * from " + this.tableName),
+    column: this.columnName,
+    functionName: CLUSTERING_FUNCTIONS[this.clusteringMethod],
     simplify_fn: 'distinct'
   })
 
-  var requiredData = new Backbone.Model({});
   SQLApiRequest(sql, {
     success: function(data) {
       var buckets = _(data.rows).pluck('buckets');
-      requiredData.set({
+      this.metadata.set({
         type: 'quartiles',
         quartiles: buckets,
         points: POINTS
       });
-    },
+      callback(this.metadata);
+    }.bind(this),
     error: function() {
       // TODO: Throw an error
     }
   });
-
-  return requiredData;
+  return this.metadata;
 }
 
-BubbleStyler.prototype.generateCartoCSS = function(data) {
-  var generator = new BubbleCSSGenerator();
- 
-  var quartiles = data.get('quartiles');
-  var points = data.get('points');
-
-  var cartoCSS = generator.generateCartoCSS(_.defaults(this.options, {
-    quartiles: quartiles,
-    points: points
-  }));
+BubbleStyler.prototype.getCartoCSS = function() {
+  var cartoCSS = BubbleCSSGenerator.generateCartoCSS({
+    tableName: this.tableName,
+    columnName: this.columnName,
+    quartiles: this.metadata.get('quartiles'),
+    points: this.metadata.get('points')
+  });
   
   return cartoCSS;
 }
 
-BubbleStyler.prototype.getAttrsForLegend = function(data) {
-  var quartiles = data.get('quartiles');
+BubbleStyler.prototype.getAttrsForLegend = function() {
+  var quartiles = this.metadata.get('quartiles');
   var legendAttrs = {
     "type": "bubble",
     "show_title": false,

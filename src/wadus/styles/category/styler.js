@@ -1,11 +1,13 @@
 var CategoryStyler = function(options) {
-  this.options = options;
+  this.columnName = options.columnName;
+  this.tableName = options.tableName;
+  this.colorSchema = options.colorSchema || 'blue';
+
+  this.metadata = new Backbone.Model();
 }
 
-CategoryStyler.prototype.fetchRequiredData = function() {
+CategoryStyler.prototype.fetchRequiredData = function(callback) {
   var MAX_CATEGORIES = 10;
-  var columnName = this.options.columnName;
-  var tableName = this.options.tableName;
 
   // var successCallback = options.success;
   // var errorCallback = options.error;
@@ -16,12 +18,11 @@ CategoryStyler.prototype.fetchRequiredData = function() {
   );
 
   var sql = SQLTemplate({
-    sql: encodeURIComponent("select * from " + tableName),
-    column: columnName,
+    sql: encodeURIComponent("select * from " + this.tableName),
+    column: this.columnName,
     max_values: MAX_CATEGORIES + 1
   })
 
-  var requiredData = new Backbone.Model({});
   SQLApiRequest(sql, {
     success: function(data) {
 
@@ -34,43 +35,45 @@ CategoryStyler.prototype.fetchRequiredData = function() {
         count: row.count
       }})
 
-      requiredData.set({
+      this.metadata.set({
         type: 'categories',
         categories: categories
       });
-      // successCallback(categories);
-    },
+      callback(this.metadata);
+    }.bind(this),
     error: function() {
       // TODO: Throw an error
     }
   });
 
-  return requiredData;
+  return this.metadata;
 }
 
-CategoryStyler.prototype.generateCartoCSS = function(data) {
-  var generator = new CategoryCSSGenerator();
-  var categories = data.get('categories');
-  var cartoCSS = generator.generateCartoCSS(_.defaults(this.options, {
-    categories: categories
-  }));
+CategoryStyler.prototype.getCartoCSS = function() {
+  var cartoCSS = CategoryCSSGenerator.generateCartoCSS({
+    tableName: this.tableName,
+    columnName: this.columnName,
+    colorSchema: this.colorSchema,
+    categories: this.metadata.get('categories')
+  });
+
   return cartoCSS;
 }
 
-CategoryStyler.prototype.getAttrsForLegend = function(data) {
+CategoryStyler.prototype.getAttrsForLegend = function() {
   var legendAttrs = {
     type: 'category',
     items: []
   }
 
-  data.get('categories').forEach(function(category) {
+  this.metadata.get('categories').forEach(function(category, i) {
     legendAttrs.items.push(
       {
         "name": category.name,
-        "value": category.color
+        "value": COLOR_SCHEMAS[this.colorSchema][i]
       }
     );
-  });
+  }.bind(this));
 
   return legendAttrs;
 }

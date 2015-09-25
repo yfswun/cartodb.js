@@ -18,14 +18,9 @@
 //
 //  TODO: Should we fetch the schema to check if the table has a NUMERIC column?
 //
-var BubbleCSSGenerator = function() {
-  this.REQUIRED_OPTIONS = ['columnName'];
-}
+var BubbleCSSGenerator = {};
 
-BubbleCSSGenerator.prototype.generateCartoCSS = function(options) {
-  validatePresenceOfRequiredOptions(options);
-
-  var visualizationType = options.visualizationType;
+BubbleCSSGenerator.generateCartoCSS = function(options) {
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var columnName = options.columnName;
@@ -35,21 +30,21 @@ BubbleCSSGenerator.prototype.generateCartoCSS = function(options) {
 
   var css = [];
 
-  css.push(this._cartoCSSHeader(visualizationType));
+  css.push(this._cartoCSSHeader());
   css.push(this._cartoCSSForTable(geometryType, tableName));
   css.push(this._cartoCSSForBubbles(tableName, columnName, quartiles, points));
 
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._cartoCSSHeader = function(style) {
+BubbleCSSGenerator._cartoCSSHeader = function() {
   var css = [];
-  css.push("/** " + style + "**/\n\n");
+  css.push("/** Bubble **/\n\n");
 
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._cartoCSSForTable = function(geometryType, tableName) {
+BubbleCSSGenerator._cartoCSSForTable = function(geometryType, tableName) {
   var css = [];
   css.push('#' + tableName + '{');
   css.push('  marker-fill-opacity: 0.9;');
@@ -67,7 +62,7 @@ BubbleCSSGenerator.prototype._cartoCSSForTable = function(geometryType, tableNam
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._cartoCSSForBubbles = function(tableName, columnName, quartiles, points) {
+BubbleCSSGenerator._cartoCSSForBubbles = function(tableName, columnName, quartiles, points) {
   var css = [];
   for(var i = points - 1; i >= 0; --i) {
     if(quartiles[i]) {
@@ -80,7 +75,7 @@ BubbleCSSGenerator.prototype._cartoCSSForBubbles = function(tableName, columnNam
   return css.join("\n");
 }
 
-BubbleCSSGenerator.prototype._getBubbleWidth = function(index, points) {
+BubbleCSSGenerator._getBubbleWidth = function(index, points) {
   var minBubbleWidth = 10;
   var maxBubbleWidth = 25;
   var t = index / (points - 1);

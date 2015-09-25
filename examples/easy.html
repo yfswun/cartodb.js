@@ -61,27 +61,20 @@
           var layer = layers[1];
           var sublayer = layer.getSubLayer(0)
 
-          // Layer is not what you might think...
-          // var sublayer = layers[0]
-
-          // TODO: Move this somewhere else!
-          // var legendView = new LegendView({ model: layer.metadata });
-          // legendView.render();
-
-          sublayer.visualizeAs('category', {
-            columnName: 'description',
-            colorSchema: 'pink' // pink
-          });
-
           $('.js-controls a').click(function(event) {
             event.preventDefault();
 
             var visualizationType = $(this).data('visualization-type');
 
-            if (visualizationType == 'category') {
+            if (visualizationType == 'category-blue') {
               sublayer.visualizeAs('category', {
                 columnName: 'description',
                 colorSchema: 'blue' // pink
+              });
+            } else if (visualizationType == 'category-pink') {
+              sublayer.visualizeAs('category', {
+                columnName: 'description',
+                colorSchema: 'pink' // pink
               });
             } else if (visualizationType == 'bubble') {
               sublayer.visualizeAs('bubble', {
@@ -101,7 +94,8 @@
     </script>
     <div class="controls js-controls">
       Visualization:
-      <a href="#" data-visualization-type="category">Category</a>
+      <a href="#" data-visualization-type="category-blue">Category (Blue)</a>
+      <a href="#" data-visualization-type="category-pink">Category (Pink)</a>
       <a href="#" data-visualization-type="bubble">Bubble</a>
     </div>
   </body>
