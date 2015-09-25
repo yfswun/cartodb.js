@@ -30,10 +30,12 @@ CategoryStyler.prototype.fetchRequiredData = function(callback) {
         throw new Error('The specified column is empty');
       }
 
-      var categories = _.compact(data.rows).map(function(row){return {
-        name: row.description,
-        count: row.count
-      }})
+      var categories = _.compact(data.rows).map(function(row){
+        return {
+          name: row[this.columnName],
+          count: row.count
+        }
+      }.bind(this));
 
       this.metadata.set({
         type: 'categories',

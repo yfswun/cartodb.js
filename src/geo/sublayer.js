@@ -256,10 +256,8 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
     }
 
     // TODO: This could be done in a more tell don't ask-ish way
-    // Something like styler.style!(this)
+    // Something like styler.style(this)
     styler.fetchRequiredData(function() {
-      // this.metadata.set(metadata.toJSON());
-
       // TODO: There must be a way to set the SLQ and CartoCSS at the same
 
       // Generate the CSS
