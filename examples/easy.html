@@ -16,8 +16,8 @@
       .controls {
         background: white;
         position: absolute;
-        bottom: 28px;
-        right: 15px;
+        top: 70px;
+        right: 20px;
         padding: 10px;
       }
 
@@ -30,14 +30,6 @@
         border-left: none;
         margin-left: 0px;
         padding-left: 0px;
-      }
-
-      .legend {
-        position: absolute;
-        bottom: 80px;
-        right: 15px;
-        background-color: white;
-        padding: 10px;
       }
 
     </style>
@@ -62,14 +54,21 @@
         cartodb.createVis('map', 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json', {})
         .done(function(vis, layers) {
 
+          window.vis = vis;
+          window.layers = layers;
+
+
+          var layer = layers[1];
+          var sublayer = layer.getSubLayer(0)
+
           // Layer is not what you might think...
-          var layer = layers[0];
+          // var sublayer = layers[0]
 
           // TODO: Move this somewhere else!
-          var legendView = new LegendView({ model: layer.metadata });
-          legendView.render();
+          // var legendView = new LegendView({ model: layer.metadata });
+          // legendView.render();
 
-          layer.visualizeAs('category', {
+          sublayer.visualizeAs('category', {
             columnName: 'description',
             colorSchema: 'pink' // pink
           });
@@ -80,12 +79,12 @@
             var visualizationType = $(this).data('visualization-type');
 
             if (visualizationType == 'category') {
-              layer.visualizeAs('category', {
+              sublayer.visualizeAs('category', {
                 columnName: 'description',
                 colorSchema: 'blue' // pink
               });
             } else if (visualizationType == 'bubble') {
-              layer.visualizeAs('bubble', {
+              sublayer.visualizeAs('bubble', {
                 columnName: 'name',
                 clusteringMethod: 'jenks' // quantiles
               })

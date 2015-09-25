@@ -58,4 +58,32 @@ BubbleStyler.prototype.generateCartoCSS = function(data) {
   return cartoCSS;
 }
 
-
+BubbleStyler.prototype.getAttrsForLegend = function(data) {
+  var quartiles = data.get('quartiles');
+  var legendAttrs = {
+    "type": "bubble",
+    "show_title": false,
+    "title": "",
+    "template": "",
+    "visible": true,
+    "items": [
+      {
+        "name": "Left label",
+        "value": quartiles[0],
+        "legend_type": "bubble",
+        "type": "text"
+      },
+      {
+        "name": "Right Label",
+        "value": _.last(quartiles),
+        "legend_type": "bubble",
+        "type": "text",
+      },
+      {
+        "name": "Color",
+        "value": "#FF5C00"
+      }
+    ]
+  }
+  return legendAttrs;
+}

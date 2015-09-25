@@ -810,7 +810,7 @@ var Vis = cdb.core.View.extend({
       layer.legend.data = layer.legend.items;
       var legend = layer.legend;
 
-      if ((legend.items && legend.items.length) || legend.template) {
+      // if ((legend.items && legend.items.length) || legend.template) {
         var legendAttrs = _.extend(layer.legend, {
           visible: layer.visible
         });
@@ -821,7 +821,7 @@ var Vis = cdb.core.View.extend({
         });
         layerView.legend = legendModel;
         return legendView;
-      }
+      // }
     }
     return null;
   },
@@ -1322,14 +1322,7 @@ var Vis = cdb.core.View.extend({
   },
 
   done: function(fn) {
-    return this.bind('done', function(vis, layers) {
-      var adaptedLayer = new LayerAdapter(layers[1], 0);
-
-      // This is just a hack to be able to access/use the new layer interface
-      // from good old regular layers
-      layers[1]._newLayer = adaptedLayer;
-      fn(vis, [adaptedLayer]);
-    });
+    return this.bind('done', fn);
   },
 
   // public methods

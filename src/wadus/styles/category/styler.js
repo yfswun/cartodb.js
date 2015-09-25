@@ -57,4 +57,20 @@ CategoryStyler.prototype.generateCartoCSS = function(data) {
   return cartoCSS;
 }
 
+CategoryStyler.prototype.getAttrsForLegend = function(data) {
+  var legendAttrs = {
+    type: 'category',
+    items: []
+  }
 
+  data.get('categories').forEach(function(category) {
+    legendAttrs.items.push(
+      {
+        "name": category.name,
+        "value": category.color
+      }
+    );
+  });
+
+  return legendAttrs;
+}
