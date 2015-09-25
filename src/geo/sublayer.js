@@ -255,28 +255,26 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
       throw new Error('The type of visualization "' + visualizationType + '" is not supported');
     }
 
-    // TODO: Move this to the constructor
-    if (!this.metadata) {
-      // Metadata that is the result of the data analysis that was required to
-      // display the layer in a certain way. This is used to render legends.
-      this.metadata = new Backbone.Model();
-    }
+    // TODO: This could be done in a more tell don't ask-ish way
+    // Something like styler.style!(this)
+    styler.fetchRequiredData(function() {
+      // this.metadata.set(metadata.toJSON());
 
-    var metadata = styler.fetchRequiredData();
-    metadata.bind('change', function() {
-      metadata.unbind('change');
-      this.metadata.set(metadata.toJSON());
+      // TODO: There must be a way to set the SLQ and CartoCSS at the same
 
       // Generate the CSS
-      var cartoCSS = styler.generateCartoCSS(this.metadata);
+      var cartoCSS = styler.getCartoCSS();
       this.setCartoCSS(cartoCSS);
 
       // TODO: Generate the SQL
       
       // TODO: Generate the legends
-      var legendAttrs = styler.getAttrsForLegend(this.metadata);
-      this.legend.set(legendAttrs)
-
+      var legendAttrs = styler.getAttrsForLegend();
+      if (legendAttrs) {
+        this.legend.set(legendAttrs)
+      } else {
+        // TODO: Clear the legend
+      }
     }.bind(this));
   },
 
