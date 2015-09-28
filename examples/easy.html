@@ -49,6 +49,8 @@
     <script src="../src/wadus/styles/bubble/styler.js"></script>
     <script src="../src/wadus/styles/choropleth/carto_css_generator.js"></script>
     <script src="../src/wadus/styles/choropleth/styler.js"></script>
+    <script src="../src/wadus/styles/cluster/carto_css_generator.js"></script>
+    <script src="../src/wadus/styles/cluster/styler.js"></script>
 
     <script>
       function main() {
@@ -96,7 +98,12 @@
                 colorSchema: 'pink',
                 buckets: 7
               })
+            } else if (visualizationType == 'cluster') {
+              sublayer.visualizeAs('cluster', {
+                buckets: 5
+              })
             }
+
           })
         })
         .error(function(err) {
@@ -116,6 +123,7 @@
         <li><a href="#" data-visualization-type="bubble">Bubble</a></li>
         <li><a href="#" data-visualization-type="choropleth-blue-3-buckets">Choropleth (Blue, 3 buckets)</a></li>
         <li><a href="#" data-visualization-type="choropleth-pink-7-buckets">Choropleth (Pink, 7 buckets)</a></li>
+        <li><a href="#" data-visualization-type="cluster">Cluster (5 buckets)</a></li>
       </ul>
     </div>
   </body>

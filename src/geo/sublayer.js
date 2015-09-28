@@ -245,8 +245,12 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
   },
 
   visualizeAs: function(visualizationType, options) {
+
+    // TODO: We need to extract this from the viz.json
+    var tableName = 'untitled_table_7';
+
     var options = _.defaults(options || {}, {
-      tableName: 'untitled_table_7',
+      tableName: tableName,
       geometryType: 'point'
     })
 
@@ -258,17 +262,18 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
     // TODO: This could be done in a more tell don't ask-ish way
     // Something like styler.style(this)
     styler.fetchRequiredData(function() {
-      // TODO: There must be a way to set the SLQ and CartoCSS at the same
 
-      // Generate the CSS
-      var cartoCSS = styler.getCartoCSS();
-      console.log(cartoCSS);
-      this.setCartoCSS(cartoCSS);
+      var sql = 'SELECT * from ' + tableName;
+      var sqlWrapper = styler.getSQLWrapper && styler.getSQLWrapper();
+      if (sqlWrapper) {
+        var sql = sqlWrapper.replace(/__wrapped/g, '(' + sql + ')');
+      }
 
-
-      // TODO: Generate the SQL
+      this.set({
+        cartocss: styler.getCartoCSS(),
+        sql: sql
+      });
       
-      // TODO: Generate the legends
       var legendAttrs = styler.getAttrsForLegend();
       if (legendAttrs) {
         this.legend.set(legendAttrs)
@@ -288,6 +293,8 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
       styler = new BubbleStyler(options);
     } else if (visualizationType === 'choropleth') {
       styler = new ChoroplethStyler(options);
+    } else if (visualizationType === 'cluster') {
+      styler = new ClusterStyler(options);
     }
 
     // TODO: Register more stylers here

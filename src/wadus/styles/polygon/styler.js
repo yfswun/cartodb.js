@@ -6,6 +6,8 @@ var PolygonStyler = function(options) {
 
 PolygonStyler.prototype.fetchRequiredData = function(callback) {
   callback();
+
+  return this.metadata;
 }
 
 PolygonStyler.prototype.getCartoCSS = function() {
@@ -25,5 +27,4 @@ PolygonStyler.prototype.getAttrsForLegend = function() {
     "items": []
   }
   return legendAttrs;
-
 }
