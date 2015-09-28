@@ -21,17 +21,16 @@
         padding: 10px;
       }
 
-      .controls a {
-        border-left: 1px solid #CDCDCD;
-        margin-left: 3px;
-        padding-left: 5px;
-      }
-      .controls a:first-child {
-        border-left: none;
-        margin-left: 0px;
-        padding-left: 0px;
+      .controls ul {
+        list-style-type: none;
+        margin: 10px 0 10px 0;
+        padding: 0;
       }
 
+      .controls ul li {
+        line-height: 1.6em;
+        font-size: 13px;
+      }
     </style>
 
     <link rel="stylesheet" href="../dist/themes/css/cartodb.css" />
@@ -44,10 +43,10 @@
     <script src="../src/main.js"></script>
     <script src="../src/wadus/styles/category/carto_css_generator.js"></script>
     <script src="../src/wadus/styles/category/styler.js"></script>
+    <script src="../src/wadus/styles/polygon/carto_css_generator.js"></script>
+    <script src="../src/wadus/styles/polygon/styler.js"></script>
     <script src="../src/wadus/styles/bubble/carto_css_generator.js"></script>
     <script src="../src/wadus/styles/bubble/styler.js"></script>
-    <script src="../src/wadus/layer_adapter.js"></script>
-    <script src="../src/wadus/legend_view.js"></script>
 
     <script>
       function main() {
@@ -66,7 +65,9 @@
 
             var visualizationType = $(this).data('visualization-type');
 
-            if (visualizationType == 'category-blue') {
+            if (visualizationType == 'polygon') {
+              sublayer.visualizeAs('polygon');
+            } else if (visualizationType == 'category-blue') {
               sublayer.visualizeAs('category', {
                 columnName: 'description',
                 colorSchema: 'blue' // pink
@@ -93,10 +94,13 @@
       window.onload = fn;
     </script>
     <div class="controls js-controls">
-      Visualization:
-      <a href="#" data-visualization-type="category-blue">Category (Blue)</a>
-      <a href="#" data-visualization-type="category-pink">Category (Pink)</a>
-      <a href="#" data-visualization-type="bubble">Bubble</a>
+      <strong>Styles</strong>
+      <ul>
+        <li><a href="#" data-visualization-type="polygon">Polygon</a></li>
+        <li><a href="#" data-visualization-type="category-blue">Category (Blue)</a></li>
+        <li><a href="#" data-visualization-type="category-pink">Category (Pink)</a></li>
+        <li><a href="#" data-visualization-type="bubble">Bubble</a></li>
+      </ul>
     </div>
   </body>
 </html>

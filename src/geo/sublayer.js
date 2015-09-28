@@ -245,7 +245,7 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
   },
 
   visualizeAs: function(visualizationType, options) {
-    var options = _.defaults(options, {
+    var options = _.defaults(options || {}, {
       tableName: 'untitled_table_7',
       geometryType: 'point'
     })
@@ -262,7 +262,9 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
 
       // Generate the CSS
       var cartoCSS = styler.getCartoCSS();
+      console.log(cartoCSS);
       this.setCartoCSS(cartoCSS);
+
 
       // TODO: Generate the SQL
       
@@ -278,7 +280,9 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
 
   _getStylerFor: function(visualizationType, options) {
     var styler;
-    if (visualizationType === 'category') {
+    if (visualizationType === 'polygon') {
+      styler = new PolygonStyler(options);
+    } else if (visualizationType === 'category') {
       styler = new CategoryStyler(options);
     } else if (visualizationType === 'bubble') {
       styler = new BubbleStyler(options);

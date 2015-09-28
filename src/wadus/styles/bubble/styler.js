@@ -60,7 +60,6 @@ BubbleStyler.prototype.getAttrsForLegend = function() {
     "show_title": false,
     "title": "",
     "template": "",
-    "visible": true,
     "items": [
       {
         "name": "Left label",
