@@ -1,18 +1,24 @@
-var BubbleStyler = function(options) {
+/**
+ * Requirements:
+ *   - Table must have a numeric column
+ */
+
+var ChoroplethStyler = function(options) {
   this.columnName = options.columnName;
   this.tableName = options.tableName;
+  this.buckets = options.buckets || 3 // 3, 5 or 7;
   this.clusteringMethod = options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);
+  this.colorSchema = options.colorSchema || 'blue';
 
   this.metadata = new Backbone.Model();
 }
 
-BubbleStyler.prototype.fetchRequiredData = function(callback) {
-  var POINTS = 10;
+ChoroplethStyler.prototype.fetchRequiredData = function(callback) {
 
   var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
 
   var sql = SQLTemplate({
-    slots: POINTS,
+    slots: this.buckets,
     sql: encodeURIComponent("select * from " + this.tableName),
     column: this.columnName,
     functionName: CLUSTERING_FUNCTIONS[this.clusteringMethod],
@@ -24,8 +30,7 @@ BubbleStyler.prototype.fetchRequiredData = function(callback) {
       var buckets = _(data.rows).pluck('buckets');
       this.metadata.set({
         type: 'quartiles',
-        quartiles: buckets,
-        points: POINTS
+        quartiles: buckets
       });
       callback(this.metadata);
     }.bind(this),
@@ -36,42 +41,45 @@ BubbleStyler.prototype.fetchRequiredData = function(callback) {
   return this.metadata;
 }
 
-BubbleStyler.prototype.getCartoCSS = function() {
-  var cartoCSS = BubbleCSSGenerator.generateCartoCSS({
+ChoroplethStyler.prototype.getCartoCSS = function() {
+  var cartoCSS = ChoroplethCSSGenerator.generateCartoCSS({
     tableName: this.tableName,
     columnName: this.columnName,
-    quartiles: this.metadata.get('quartiles'),
-    points: this.metadata.get('points')
+    colorSchema: this.colorSchema,
+    quartiles: this.metadata.get('quartiles')
   });
-  
   return cartoCSS;
 }
 
-BubbleStyler.prototype.getAttrsForLegend = function() {
+ChoroplethStyler.prototype.getAttrsForLegend = function() {
   var quartiles = this.metadata.get('quartiles');
   var legendAttrs = {
-    "type": "bubble",
-    "show_title": false,
-    "title": "",
-    "template": "",
-    "items": [
+    type: "choropleth",
+    show_title: false,
+    title: "",
+    template: "",
+    items: [
       {
         "name": "Left label",
-        "value": quartiles[0],
-        "legend_type": "bubble",
+        "value": _.last(quartiles),
         "type": "text"
       },
       {
-        "name": "Right Label",
-        "value": _.last(quartiles),
-        "legend_type": "bubble",
-        "type": "text",
-      },
-      {
-        "name": "Color",
-        "value": "#FF5C00"
+        "name": "Right label",
+        "value": quartiles[0],
+        "type": "text"
       }
     ]
+
   }
+
+  quartiles.reverse().forEach(function(quartile, index) {
+    legendAttrs.items.push({
+      "name": "Color",
+      "value": COLOR_SCHEMAS[this.colorSchema][index],
+      "type": "color"
+    });
+  }.bind(this));
+
   return legendAttrs;
 }

@@ -23,6 +23,11 @@ var COLOR_SCHEMAS = {
   'pink': ['#F1EEF6', '#D4B9DA', '#C994C7', '#DF65B0', '#E7298A', '#CE1256', '#91003F']
 }
 
+var CLUSTERING_FUNCTIONS = {
+  'quantile': 'CDB_QuantileBins',
+  'jenks': 'CDB_JenksBins'
+}
+
 var validatePresenceOfRequiredOptions = function(options) {
   for (var i in this.REQUIRED_OPTIONS) {
     var option = this.REQUIRED_OPTIONS[i];

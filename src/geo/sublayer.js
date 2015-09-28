@@ -286,6 +286,8 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
       styler = new CategoryStyler(options);
     } else if (visualizationType === 'bubble') {
       styler = new BubbleStyler(options);
+    } else if (visualizationType === 'choropleth') {
+      styler = new ChoroplethStyler(options);
     }
 
     // TODO: Register more stylers here
