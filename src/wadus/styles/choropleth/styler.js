@@ -1,8 +1,3 @@
-/**
- * Requirements:
- *   - Table must have a numeric column
- */
-
 var ChoroplethStyler = function(options) {
   this.columnName = options.columnName;
   this.tableName = options.tableName;

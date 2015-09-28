@@ -1,34 +1,3 @@
-//
-// CUSTOMIZABLE STUFF:
-// 
-// All geometries:
-//
-//  - Color of each category
-//
-// Point:
-//
-//  - Marker width
-//  - Marker fill opacity
-//  - Stroke width
-//  - Stroke color
-//  - Stroke opacity
-//
-// Polygon:
-//
-//  - Polygon fill opacity
-//  - Stroke width
-//  - Stroke color
-//  - Stroke opacity
-//
-// Line:
-//
-//  - Stroke width
-//  - Stroke opacity
-//
-// TODO: Generate the right cartoCSS for the selected geometryType
-// TODO: Allow more customization (fill, stroke, ...)
-// TODO: What if the column doesn't exist?
-//
 var CategoryCSSGenerator = {};
 
 CategoryCSSGenerator.generateCartoCSS = function(options) {

@@ -1,23 +1,3 @@
-//
-// REQUIREMENTS:
-//
-//  - Table must have a NUMERIC column
-//
-// CUSTOMIZABLE STUFF:
-//
-// All geometries:
-//
-//  - Quantification/clustering method: Jenks / Equal Interval / Heads-Tails / Quantile
-//  - Bubble Radius: min and max radius size
-//  - Bubble fill color
-//  - Bubble fill opacity
-//  - Stroke with
-//  - Stroke color
-//  - Stroke opacity
-//  - Composite operation: multiply, screen, overlay, darken, etc.
-//
-//  TODO: Should we fetch the schema to check if the table has a NUMERIC column?
-//
 var BubbleCSSGenerator = {};
 
 BubbleCSSGenerator.generateCartoCSS = function(options) {

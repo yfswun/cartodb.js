@@ -1,20 +1,3 @@
-//
-//  THINGS TO CONSIDER / THINK ABOUT
-//  
-//  1. We need to modify the CartoCSS and SQL of layers so that the Tiler can render
-//     the tiles according to what the user is asking for. Right now, Layer s in named_maps
-//     are not editable. How will we do this?
-//   
-//  2. How will the user customize the style of the layer visualization?
-//  
-//  DATA REQUIRED BY THE GENERATORS
-//  
-//  The client (cartodb.js) will need the following information:
-//
-//    - The type of geometry of the dataset (point, polygon, line)
-//    - The name of the table linked to the layer that want to style
-//    - The URL of the SQL API (protocol, domain, endpoint, port)
-//    - The username
 var API_URL = 'http://pabloalonso.cartodb.com/api/v2/sql';
 
 var COLOR_SCHEMAS = {
@@ -50,4 +33,3 @@ var SQLApiRequest = function(sql, options) {
     error: errorCallback
   });
 }
-
