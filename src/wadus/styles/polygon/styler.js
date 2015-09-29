@@ -18,6 +18,10 @@ PolygonStyler.prototype.getCartoCSS = function() {
   return cartoCSS;
 }
 
+PolygonStyler.prototype.getSQL = function() {
+  return 'SELECT * from ' + this.tableName;
+}
+
 PolygonStyler.prototype.getAttrsForLegend = function() {
   var legendAttrs = {
     "type": "none",

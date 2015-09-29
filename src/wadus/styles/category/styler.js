@@ -62,6 +62,10 @@ CategoryStyler.prototype.getCartoCSS = function() {
   return cartoCSS;
 }
 
+CategoryStyler.prototype.getSQL = function() {
+  return 'SELECT * from ' + this.tableName;
+}
+
 CategoryStyler.prototype.getAttrsForLegend = function() {
   var legendAttrs = {
     type: 'category',

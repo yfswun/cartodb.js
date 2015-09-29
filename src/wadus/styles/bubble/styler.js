@@ -9,7 +9,7 @@ var BubbleStyler = function(options) {
 BubbleStyler.prototype.fetchRequiredData = function(callback) {
   var POINTS = 10;
 
-  var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null');
+  var SQLTemplate = _.template('select unnest(<%= functionName %>(array_agg(<%= simplify_fn %>((<%= column %>::numeric))), <%= slots %>)) as buckets from (<%= sql %>) _table_sql where <%= column %> is not null order by buckets');
 
   var sql = SQLTemplate({
     slots: POINTS,
@@ -45,6 +45,10 @@ BubbleStyler.prototype.getCartoCSS = function() {
   });
   
   return cartoCSS;
+}
+
+BubbleStyler.prototype.getSQL = function() {
+  return 'SELECT * from ' + this.tableName;
 }
 
 BubbleStyler.prototype.getAttrsForLegend = function() {

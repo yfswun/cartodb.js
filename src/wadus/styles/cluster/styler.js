@@ -22,7 +22,7 @@ ClusterStyler.prototype.getCartoCSS = function() {
   return cartoCSS;
 }
 
-ClusterStyler.prototype.getSQLWrapper = function() {
+ClusterStyler.prototype.getSQL = function() {
   var tableName = this.tableName;
   var nquartiles = this.buckets;
   var grids = ["A", "B", "C", "D", "E"];
@@ -99,7 +99,7 @@ ClusterStyler.prototype.getSQLWrapper = function() {
     name: tableName,
     //size: props["radius_min"],
     size: 48,
-    table: "__wrapped"
+    table: '(SELECT * from ' + tableName + ')'
   });
 
 }

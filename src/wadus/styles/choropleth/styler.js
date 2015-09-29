@@ -46,6 +46,10 @@ ChoroplethStyler.prototype.getCartoCSS = function() {
   return cartoCSS;
 }
 
+ChoroplethStyler.prototype.getSQL = function() {
+  return 'SELECT * from ' + this.tableName;
+}
+
 ChoroplethStyler.prototype.getAttrsForLegend = function() {
   var quartiles = this.metadata.get('quartiles');
   var legendAttrs = {

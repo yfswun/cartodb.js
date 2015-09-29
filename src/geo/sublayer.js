@@ -260,16 +260,9 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
     }
 
     styler.fetchRequiredData(function() {
-
-      var sql = 'SELECT * from ' + tableName;
-      var sqlWrapper = styler.getSQLWrapper && styler.getSQLWrapper();
-      if (sqlWrapper) {
-        var sql = sqlWrapper.replace(/__wrapped/g, '(' + sql + ')');
-      }
-
       this.set({
         cartocss: styler.getCartoCSS(),
-        sql: sql
+        sql: styler.getSQL()
       });
       
       var legendAttrs = styler.getAttrsForLegend();
