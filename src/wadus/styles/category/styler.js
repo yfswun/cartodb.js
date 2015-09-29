@@ -68,11 +68,11 @@ CategoryStyler.prototype.getAttrsForLegend = function() {
     items: []
   }
 
-  this.metadata.get('categories').forEach(function(category, i) {
+  this.metadata.get('categories').forEach(function(category, index) {
     legendAttrs.items.push(
       {
         "name": category.name,
-        "value": COLOR_SCHEMAS[this.colorSchema][i]
+        "value": COLOR_SCHEMAS[this.colorSchema][index]
       }
     );
   }.bind(this));

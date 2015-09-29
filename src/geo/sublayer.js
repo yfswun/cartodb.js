@@ -259,8 +259,6 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
       throw new Error('The type of visualization "' + visualizationType + '" is not supported');
     }
 
-    // TODO: This could be done in a more tell don't ask-ish way
-    // Something like styler.style(this)
     styler.fetchRequiredData(function() {
 
       var sql = 'SELECT * from ' + tableName;
