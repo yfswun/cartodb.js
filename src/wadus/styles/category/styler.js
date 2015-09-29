@@ -9,9 +9,6 @@ var CategoryStyler = function(options) {
 CategoryStyler.prototype.fetchRequiredData = function(callback) {
   var MAX_CATEGORIES = 10;
 
-  // var successCallback = options.success;
-  // var errorCallback = options.error;
-
   var SQLTemplate = _.template('\
     SELECT <%= column %>, count(<%= column %>) FROM (<%= sql %>) _table_sql ' +
     'GROUP BY <%= column %> ORDER BY count DESC LIMIT <%= max_values %> '

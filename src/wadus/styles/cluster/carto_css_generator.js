@@ -4,7 +4,6 @@ ClusterCSSGenerator.generateCartoCSS = function(options) {
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var bucketNames = options.bucketNames;
-
   var minMarkerWidth = 24;
   var maxMarkerWidth = 64;
 
@@ -36,7 +35,7 @@ ClusterCSSGenerator._cartoCSSForTable = function(geometryType, tableName, bucket
   css.push('  marker-allow-overlap: true;');
   css.push("\n");
 
-
+  // TODO: Calculate this somewhere else and pass makerWidths as a parameter
   var sizes = [minMarkerWidth];
 
   var buckets = bucketNames.length;
