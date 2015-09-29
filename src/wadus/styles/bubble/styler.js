@@ -1,4 +1,6 @@
 var BubbleStyler = function(options) {
+  validatePresenceOfRequiredOptions(options, ['tableName', 'columnName']);
+  
   this.columnName = options.columnName;
   this.tableName = options.tableName;
   this.clusteringMethod = options.clusteringMethod || Object.keys(CLUSTERING_FUNCTIONS[0]);

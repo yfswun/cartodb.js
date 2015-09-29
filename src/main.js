@@ -11,11 +11,11 @@ var CLUSTERING_FUNCTIONS = {
   'jenks': 'CDB_JenksBins'
 }
 
-var validatePresenceOfRequiredOptions = function(options) {
-  for (var i in this.REQUIRED_OPTIONS) {
-    var option = this.REQUIRED_OPTIONS[i];
-    if (!options[option]) {
-      throw new Error(option + " is required");
+var validatePresenceOfRequiredOptions = function(options, requiredOptions) {
+  for (var i in requiredOptions) {
+    var requiredOption = requiredOptions[i];
+    if (!options[requiredOption]) {
+      throw new Error(requiredOption + " is required");
     }
   }
 }

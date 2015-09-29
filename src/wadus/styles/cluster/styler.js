@@ -1,4 +1,6 @@
 var ClusterStyler = function(options) {
+  validatePresenceOfRequiredOptions(options, ['tableName']);
+
   this.tableName = options.tableName;
   this.buckets = options.buckets || 3 // 2, 3, 4, 5;
 

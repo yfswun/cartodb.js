@@ -1,4 +1,6 @@
 var PolygonStyler = function(options) {
+  validatePresenceOfRequiredOptions(options, ['tableName']);
+  
   this.tableName = options.tableName;
 
   this.metadata = new Backbone.Model();

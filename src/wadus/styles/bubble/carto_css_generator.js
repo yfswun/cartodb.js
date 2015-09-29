@@ -4,7 +4,6 @@ BubbleCSSGenerator.generateCartoCSS = function(options) {
   var geometryType = options.geometryType;
   var tableName = options.tableName;
   var columnName = options.columnName;
-
   var quartiles = options.quartiles;
   var points = options.points;
 

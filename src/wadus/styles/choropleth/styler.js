@@ -1,4 +1,6 @@
 var ChoroplethStyler = function(options) {
+  validatePresenceOfRequiredOptions(options, ['tableName', 'columnName']);
+
   this.columnName = options.columnName;
   this.tableName = options.tableName;
   this.buckets = options.buckets || 3 // 3, 5 or 7;

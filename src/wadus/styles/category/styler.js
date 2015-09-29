@@ -1,4 +1,6 @@
 var CategoryStyler = function(options) {
+  validatePresenceOfRequiredOptions(options, ['tableName', 'columnName']);
+  
   this.columnName = options.columnName;
   this.tableName = options.tableName;
   this.colorSchema = options.colorSchema || 'blue';
