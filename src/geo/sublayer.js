@@ -247,7 +247,7 @@ CartoDBSubLayer.prototype = _.extend({}, SubLayerBase.prototype, {
   visualizeAs: function(visualizationType, options) {
 
     // TODO: We need to extract this from the viz.json
-    var tableName = 'untitled_table_7';
+    var tableName = 'county_points_with_population';
 
     var options = _.defaults(options || {}, {
       tableName: tableName,

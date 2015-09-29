@@ -54,7 +54,10 @@
 
     <script>
       function main() {
-        cartodb.createVis('map', 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json', {})
+
+        // var vizJSON = 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/d29f9a84-5546-11e5-815b-0e9d821ea90d/viz.json';
+        var vizJSON = 'https://team.cartodb.com/u/pabloalonso/api/v2/viz/748a765e-6689-11e5-b810-0ecbf97728a3/viz.json';
+        cartodb.createVis('map', vizJSON, {})
         .done(function(vis, layers) {
 
           window.vis = vis;
@@ -72,28 +75,28 @@
               sublayer.visualizeAs('polygon');
             } else if (visualizationType == 'category-blue') {
               sublayer.visualizeAs('category', {
-                columnName: 'description',
+                columnName: 'category',
                 colorSchema: 'blue' // pink
               });
             } else if (visualizationType == 'category-pink') {
               sublayer.visualizeAs('category', {
-                columnName: 'city',
+                columnName: 'category',
                 colorSchema: 'pink' // pink
               });
             } else if (visualizationType == 'bubble') {
               sublayer.visualizeAs('bubble', {
-                columnName: 'name',
+                columnName: 'estimate_total',
                 clusteringMethod: 'jenks' // quantiles
               })
             } else if (visualizationType == 'choropleth-blue-3-buckets') {
               sublayer.visualizeAs('choropleth', {
-                columnName: 'name',
+                columnName: 'estimate_total',
                 clusteringMethod: 'jenks', // quantiles
                 colorSchema: 'blue'
               })
             } else if (visualizationType == 'choropleth-pink-7-buckets') {
               sublayer.visualizeAs('choropleth', {
-                columnName: 'name',
+                columnName: 'estimate_total',
                 clusteringMethod: 'jenks', // quantiles
                 colorSchema: 'pink',
                 buckets: 7
