@@ -9,53 +9,49 @@
     <script src="../src/cartodb.js"></script>
 
     <style>
-      html, body {
+      body {
+        padding: 40px;
+        color: #333;
+        line-height: 28px;
+        font-size: 16px;
+        font-family: "Lato";
+        text-rendering: optimizeLegibility;
         margin: 0;
         padding: 20px;
         background: #F1F1F1;
         font: 10px sans-serif;
       }
 
+      .Widget {
+        position: relative;
+      }
+
+      .selectable .handle,
+      .selectable .l {
+        opacity: 1;
+      }
+
+      .chart {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+      }
+
+      .extent {
+        fill-opacity: 0;
+        stroke: #3AA9E3;
+        opacity: 0;
+        shape-rendering: crispEdges;
+      }
+
+      .bar.selected {
+        fill: #DDD;
+        opacity: .8;
+      }
       .bar {
         fill: #9DE0AD;
-      }
-
-      .area {
-        z-index: 30;
-        display: block;
-        visibility: visible;
-        position: relative;
-        padding-top: 15px;
-        margin-top: 15px;
-      }
-      .axis {
-        font: 10px sans-serif;
-      }
-      .axis path,
-      .axis line {
-        fill: none;
-        stroke: #000;
         shape-rendering: crispEdges;
       }
-      .x.axis path {
-        display: none;
-      }
-      .resize path {
-        fill: #666;
-        fill-opacity: .8;
-        stroke: #000;
-        stroke-width: 1.5px;
-      }
-      .brush .extent {
-        fill-opacity: 0.1;
-        stroke: #fff;
-        shape-rendering: crispEdges;
-      }
-
-      .selected {
-        fill: #DDD;
-      }
-
       .axis {
         font: 12px sans-serif;
         shape-rendering: crispEdges;
@@ -66,22 +62,80 @@
         stroke: #000;
         shape-rendering: crispEdges;
       }
-      line.x {
-        stroke: #DDD;
-        stroke-width: 2;
-        shape-rendering: crispEdges;
-      }
-      line.y {
-        stroke: #DDD;
+
+      .y {
+        stroke: #f1f1f1;
         stroke-width: 2;
         shape-rendering: crispEdges;
       }
 
+      .l_bottom {
+        stroke-width: 1;
+        opacity: 0.2;
+        stroke: #000000;
+        shape-rendering: crispEdges;
+      }
+
+      .line {
+        stroke-width: 2;
+        stroke: #3AA9E3;
+      }
+
+      .handle {
+        opacity: 0;
+        stroke-width: 2;
+        stroke: #3AA9E3;
+        fill: #FFF;
+      }
+
+      .l {
+        opacity: 0;
+        stroke-width: 2;
+        stroke: #3AA9E3;
+      }
+
+      .x.axis path {
+        display: none;
+        shape-rendering: crispEdges;
+      }
+      .median-label {
+        fill: #333;
+        font-size: .7em;
+      }
+      .median {
+        stroke: red;
+        shape-rendering: crispEdges;
+      }
+      .d3-tip {
+        font-size: 12px;
+        line-height: 1;
+        padding: 12px;
+        background: #333;
+        color: #fff;
+        border-radius: 3px;
+      }
+      .d3-tip:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: #333;
+        content: "\25BC";
+        position: absolute;
+        text-align: center;
+      }
+      .d3-tip.n:after {
+        margin: -1px 0 0 0;
+        top: 100%;
+        left: 0;
+      }
     </style>
 
   </head>
 
   <body>
+
 
     <div class="Widget">
       <h2 class="Widget-title">Transactions by visitors</h2>
@@ -91,43 +145,43 @@
         <li class="Widget-infoItem">142k avg</li>
         <li class="Widget-infoItem">1.13m max</li>
       </ul>
+      <svg class="chart"></svg>
     </div>
+
+    <button id="returnBrush" class="btn btn-default" onclick="resetBrush()">Remove Brush</button>
 
     <script>
 
-      function main() {
+      function addHistogram(w, h) {
+        var margin = { top: 0, right: 10, bottom: 1, left: 10 };
+        var width  = w - margin.left - margin.right;
+        var height = h - margin.top - margin.bottom;
 
-        // Generate a Bates distribution of 10 random variables.
-        var values = d3.range(1000).map(d3.random.bates(1));
+        var y = d3.scale.linear()
+        .range([height, 0]);
 
-        var width = 500;
-        var height = 100;
+        chart = d3.select(".chart")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr('transform', 'translate(10, 0)')
+
+        data = d3.range(0, 300, 10).map(d3.random.bates(2));
+
+        var barWidth = width/data.length;
 
         var x = d3.scale.linear()
         .domain([0, 1])
         .range([0, width]);
 
-        var data = d3.layout.histogram().bins(x.ticks(20))(values);
-
-        var y = d3.scale.linear()
-        .domain([0, d3.max(data, function(d) { return d.y; })])
-        .range([height, 0]);
-
-        var xAxis = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
-
-        var svg = d3.select("body").append("svg")
-        .attr('class', 'area')
-        .attr("width", width )
-        .attr("height", height )
-        .append("g");
+        y.domain([0, d3.max(data, function(d) { return d; } )]);
 
         var yData = d3.range(0, height + height/2, height/2);
         var xData = d3.range(0, width + width/4, width/4);
-        console.log(xData);
 
-        svg.selectAll("line.y")
+        chart.append("g")
+        .attr('class', 'grid y')
+        .selectAll("line.y")
         .data(yData)
         .enter().append("svg:line")
         .attr('class', 'y')
@@ -136,7 +190,9 @@
         .attr("x2", width)
         .attr("y2", function(d) { return d; })
 
-        svg.selectAll("line.x")
+        chart.append("g")
+        .attr('class', 'grid x')
+        .selectAll(".x")
         .data(xData)
         .enter().append("svg:line")
         .attr('class', 'x')
@@ -145,45 +201,140 @@
         .attr("y2", width)
         .attr("x2", function(d) { return d; })
 
+        var bar = chart.append("g")
+        .attr('class', 'bars')
+        .selectAll('.bar')
+        .data(data.reverse())
+        .enter()
+        .append('rect')
+        .attr('class', 'bar')
+        .attr('transform', function(d, i) { return 'translate(' + (i * barWidth) + ', 0 )'; })
+        .attr('y', function(d){  return height; })
+        .attr('height', 0)
+        .attr('width', barWidth - 1);
 
-        var bar = svg.selectAll(".bar")
-        .data(data)
-        .enter().append("g")
-        .attr("class", "bar")
-        .attr("transform", function(d) { return "translate(" + x(d.x) + "," + y(d.y) + ")"; });
+        bar.transition()
+        .ease('elastic')
+        .delay(function(d, i) { return Math.random() * (100 + i*10) })
+        .duration(function(d, i) { return 750; })
+        .attr('height', function(d) { return d ? height - y(d) : 0; })
+        .attr('y', function(d){ return d ? y(d) : height; });
 
-        bar.append("rect")
-        .attr("x", 1)
-        .attr("width", x(data[0].dx) - 1)
-        .attr("height", function(d) { return height - y(d.y); });
+        bottomLine = chart
+        .append("line")
+        .attr('class', 'l_bottom')
+        .attr("x1", 0)
+        .attr("y1", height)
+        .attr("x2", width)
+        .attr("y2", height);
+
+        leftHandleLine = chart
+        .append("line")
+        .attr('class', 'l')
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", height);
+
+        rightHandleLine = chart
+        .append("line")
+        .attr('class', 'l')
+        .attr("x1", 0)
+        .attr("y1", 0)
+        .attr("x2", 0)
+        .attr("y2", height);
+
+        leftHandle = chart.append("rect")
+        .attr("class", "handle")
+        .attr("transform", "translate(0," + (23/2) + (6/2) + ")")
+        .attr("width", 6)
+        .attr("height", 23)
+        .attr("rx", 3)
+        .attr("ry", 3)
+
+        rightHandle = chart.append("rect")
+        .attr("class", "handle")
+        .attr("transform", "translate(0," + (23/2) + (6/2) + ")")
+        .attr("width", 6)
+        .attr("height", 23)
+        .attr("rx", 3)
+        .attr("ry", 3)
+
+        function brushstart() {
+          console.log('start');
+          chart.attr('class', 'selectable');
+        };
+
+        function brushend() {
+          console.log('end');
+          if (brush.empty()) {
+            chart.attr('class', 'x');
+            bar.classed('selected', false);
+            d3.select(this).call(brush.extent([0, 0]));
+          }
+        };
 
         function brushed() {
           var extent = brush.extent();
+          var extent1;
           var lo = extent[0];
           var hi = extent[1];
 
-          svg.selectAll('.bar').classed("selected", function(d, i) {
-            console.log(i, lo, d[i], hi);
-            return d[i] >= lo && d[i] <= hi; 
+          bar.classed('selected', function(d, i) {
+            var a = i * barWidth;
+            var b = a + barWidth;
+            var isIn = (a > x(lo) && a < x(hi)) || (b > x(lo) && b < x(hi)) || (a <= x(lo) && b >= x(hi));
+            return  !isIn;
           });
+
+          leftHandleLine
+          .attr("x1", x(lo))
+          .attr("x2", x(lo));
+
+          rightHandleLine
+          .attr("x1", x(hi))
+          .attr("x2", x(hi));
+
+          leftHandle
+          .attr("x", x(lo) - 3);
+
+          rightHandle
+            .attr("x", x(hi) - 3);
+
+        };
+
+        brush = d3.svg.brush()
+        .x(x);
+
+        brush
+        .on('brushstart', brushstart)
+        .on('brush', brushed)
+        .on('brushend', brushend);
+
+        chart.append('g')
+        .attr('class', 'brush')
+              .call(brush)
+              .selectAll('rect')
+              .attr('y', 0)
+              .attr('height', height)
+
         }
 
-        var brush = d3.svg.brush()
-        .x(x)
-        .on("brush", brushed);
+        function resetBrush() {
+          brush
+          .clear()
+          .event(d3.select(".brush"));
+          chart.attr('class', 'x');
+        }
 
-        svg.append("g")
-        .attr("class", "x brush")
-        .call(brush)
-        .selectAll("rect")
-        .attr("y", -6)
-        .attr("height", height + 7);
-      }
+        function main() {
+          addHistogram(300, 51);
+        }
 
-      var fn = function() {
-        cartodb.load('../src/', main);
-      }
-      window.onload = fn;
+        var fn = function() {
+          cartodb.load('../src/', main);
+        }
+        window.onload = fn;
     </script>
   </body>
 </html>
