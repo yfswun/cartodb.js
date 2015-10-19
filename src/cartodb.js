@@ -106,6 +106,7 @@
         'geo/gmaps/gmaps.geometry.js',
         'geo/gmaps/gmaps.js',
 
+        'ui/common/widget.js',
         'ui/common/dialog.js',
         'ui/common/share.js',
         'ui/common/notification.js',

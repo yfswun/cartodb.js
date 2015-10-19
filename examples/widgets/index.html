@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>D3</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="http://cartodb.com/assets/favicon.ico" />
+    <link rel="stylesheet" href="../../dist/themes/css/cartodb.css" />
+    <script src="../../src/cartodb.js"></script>
+
+    <style>
+      body {
+        padding: 40px;
+        color: #333;
+        line-height: 28px;
+        font-size: 16px;
+        font-family: "Lato";
+        text-rendering: optimizeLegibility;
+        margin: 0;
+        padding: 20px;
+        background: #F1F1F1;
+        font: 10px sans-serif;
+      }
+
+      .selectable .handle,
+      .selectable .l {
+        opacity: 1;
+      }
+
+      .Widget-filter {
+        opacity: 0;
+      }
+
+      .Widget-chart {
+        max-height: 70px;
+      }
+
+      .extent {
+        fill-opacity: 0;
+        stroke: #3AA9E3;
+        opacity: 0;
+        shape-rendering: crispEdges;
+      }
+
+      .bar.selected {
+        fill: #DDD;
+        opacity: .8;
+      }
+      .bar {
+        fill: #9DE0AD;
+        transition: fill 200ms ease;
+        shape-rendering: crispEdges;
+      }
+      .axis {
+        font: 10px sans-serif;
+        shape-rendering: crispEdges;
+      }
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke-width: 1;
+        opacity: 0.2;
+        stroke: #000000;
+        shape-rendering: crispEdges;
+      }
+
+      .y {
+        stroke: #f1f1f1;
+        stroke-width: 2;
+        shape-rendering: crispEdges;
+      }
+
+      .l_bottom {
+        stroke-width: 1;
+        opacity: 0.2;
+        stroke: #000000;
+        shape-rendering: crispEdges;
+      }
+
+      .line {
+        stroke-width: 2;
+        stroke: #3AA9E3;
+      }
+
+      .handle {
+        opacity: 0;
+        stroke-width: 2;
+        stroke: #3AA9E3;
+        fill: #FFF;
+      }
+
+      .l {
+        opacity: 0;
+        stroke-width: 2;
+        stroke: #3AA9E3;
+      }
+
+      .x.axis path {
+        display: none;
+        shape-rendering: crispEdges;
+      }
+      .median-label {
+        fill: #333;
+        font-size: .7em;
+      }
+      .median {
+        stroke: red;
+        shape-rendering: crispEdges;
+      }
+      .d3-tip {
+        font-size: 12px;
+        line-height: 1;
+        padding: 12px;
+        background: #333;
+        color: #fff;
+        border-radius: 3px;
+      }
+      .d3-tip:after {
+        box-sizing: border-box;
+        display: inline;
+        font-size: 10px;
+        width: 100%;
+        line-height: 1;
+        color: #333;
+        content: "\25BC";
+        position: absolute;
+        text-align: center;
+      }
+      .d3-tip.n:after {
+        margin: -1px 0 0 0;
+        top: 100%;
+        left: 0;
+      }
+    </style>
+
+  </head>
+  <body>
+    <div class="Widget Widget--light">
+      <div class="Widget-header">
+        <h3 class="Widget-textBig">Transactions by visitors NBA stadium arenas big ones</h3>
+        <dl class="Widget-info Widget-textSmaller Widget-textSmaller--upper">
+          <dt class="Widget-infoItem">0 null rows</dt>
+          <dt class="Widget-infoItem">17k min</dt>
+          <dt class="Widget-infoItem">142k avg</dt>
+          <dt class="Widget-infoItem">1.13m max</dt>
+        </dl>
+      </div>
+      <div class="Widget-content">
+        <div class="Widget-filter Widget-contentSpaced js-filter">
+          <p class="Widget-textSmaller Widget-textSmaller--bold Widget-textSmaller--upper js-val"></p>
+          <div class="Widget-filterButtons">
+            <button class="Widget-link Widget-filterButton js-clear">clear</button>
+          </div>
+        </div>
+        <svg class="Widget-chart chart"></svg>
+      </div>
+      <script>
+        function main() {
+          var widget = new Histogram({ className: '.chart', width: 300, height: 70 });
+        }
+
+        var fn = function() {
+          cartodb.load('../../src/', main);
+        }
+
+        window.onload = fn;
+      </script>
+    </body>
+  </html>
