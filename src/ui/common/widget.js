@@ -25,6 +25,7 @@ var Histogram = cdb.core.View.extend({
     this._setupDimensions();
     this._generateChart();
     this._generateHorizontalLines();
+    this._generateVerticalLines();
     this._generateTooltip();
     this._generateBars();
     this._generateHandles();
@@ -283,31 +284,34 @@ var Histogram = cdb.core.View.extend({
     .call(xAxis);
   },
 
-  _generateHorizontalLines: function() {
-    var yData = d3.range(0, this.height + this.height / 2, this.height / 2);
-    var xData = d3.range(0, this.width + this.width / 4, this.width / 4);
-
-    this.chart.append('g')
-    .attr('class', 'y')
-    .selectAll('.y')
-    .data(yData)
-    .enter().append('svg:line')
-    .attr('class', 'y')
-    .attr('x1', 0)
-    .attr('y1', function(d) { return d; })
-    .attr('x2', this.width)
-    .attr('y2', function(d) { return d; });
+  _generateVerticalLines: function() {
+    var range = d3.range(0, this.width + this.width / 4, this.width / 4);
 
     this.chart.append('g')
     .attr('class', 'y')
     .selectAll('.x')
-    .data(xData)
+    .data(range.slice(1, range.length - 1))
     .enter().append('svg:line')
     .attr('class', 'x')
     .attr('y1', 0)
     .attr('x1', function(d) { return d; })
     .attr('y2', this.height)
     .attr('x2', function(d) { return d; });
+  },
+
+  _generateHorizontalLines: function() {
+    var range = d3.range(0, this.height + this.height / 2, this.height / 2);
+
+    this.chart.append('g')
+    .attr('class', 'y')
+    .selectAll('.y')
+    .data(range)
+    .enter().append('svg:line')
+    .attr('class', 'y')
+    .attr('x1', 0)
+    .attr('y1', function(d) { return d; })
+    .attr('x2', this.width)
+    .attr('y2', function(d) { return d; });
 
     this.bottomLine = this.chart
     .append('line')
