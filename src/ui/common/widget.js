@@ -4,11 +4,19 @@ var Histogram = cdb.core.View.extend({
     //'click .js-clear': '_reset'
   },
 
+  defaults: {
+    duration: 750,
+    handleWidth: 6,
+    handleHeight: 23,
+    handleRadius: 3,
+  },
+
   initialize: function() {
-    _.bindAll(this, '_adjustBrushHandles', '_reset');
+    _.bindAll(this, '_selectBars', '_adjustBrushHandles', '_brushed', '_brushstart', '_reset', '_onMouseMove', '_onMouseEnter', '_onMouseOut');
 
     $(".js-clear").on("click", this._reset);
     this.model = new cdb.core.Model();
+    this.model.bind('change:total', this._onChangeTotal, this);
     this._getData();
     this.render();
   },
@@ -21,6 +29,10 @@ var Histogram = cdb.core.View.extend({
     this._generateHandles();
     this._setupBrush();
     this._addXAxis();
+  },
+
+  _onChangeTotal: function() {
+    $(".js-val").text(this.model.get('total'));
   },
 
   _setupDimensions: function() {
@@ -48,38 +60,97 @@ var Histogram = cdb.core.View.extend({
     .attr('transform', 'translate(10, 0)');
   },
 
+  _brushstart: function() {
+    $(".js-filter").animate({ opacity: 1 }, 250);
+    this.chart.attr('class', 'selectable');
+  },
+
+  _selectBars: function(callback) {
+    var self = this;
+    var extent = this.brush.extent();
+    var lo = extent[0];
+    var hi = extent[1];
+
+    this.chart.selectAll('.bar').classed('selected', function(d, i) {
+      var a = Math.floor(i * self.barWidth);
+      var b = Math.floor(a + self.barWidth);
+      var LO = Math.floor(self.xScale(lo));
+      var HI = Math.floor(self.xScale(hi));
+      var isIn = (a > LO && a < HI) || (b > LO && b < HI) || (a <= LO && b >= HI);
+
+      if (isIn) {
+        callback && callback(d, i);
+      }
+      return  !isIn;
+    });
+  },
+
+  _brushed: function() {
+
+    var sum = 0;
+
+    this._selectBars(function(d, i) {
+      sum += d;
+    });
+
+    this.model.set('total', sum);
+    this._adjustBrushHandles();
+  },
+
+  _onMouseEnter: function(d) {
+    $(".tooltip").stop().fadeIn(250);
+  },
+
+  _onMouseOut: function(d) {
+    var bars = d3.selectAll('.bar');
+    bars.classed('is-highlighted', false);
+    $(".tooltip").hide();
+  },
+
+  _onMouseMove: function(d) {
+    var x = d3.event.offsetX - 10;
+    var a = Math.ceil(x/this.barWidth) ;
+    var data = this.model.get('data');
+
+    var bar = d3.select('.bar:nth-child(' + a + ')');
+
+    if (bar && bar.node() && !bar.classed('selected')) {
+      var left = (a - 1)*this.barWidth  + 34 + (this.barWidth/2) - ($(".tooltip").width()/2);
+      $(".tooltip").text(data[a - 1] + " unit");
+      $(".tooltip").css({ top: this.chartHeight + this.yScale(data[a-1] + 10), left: left });
+    } else {
+      $(".tooltip").stop().hide();
+    }
+
+    d3.selectAll('.bar')
+    .classed('is-highlighted', false);
+
+    if (bar && bar.node()) {
+      bar.classed('is-highlighted', true);
+    }
+  },
+
   _setupBrush: function() {
     var self = this;
 
     var xScale = this.xScale;
-
     var brush = this.brush = d3.svg.brush().x(this.xScale);
 
-    function brushstart() {
-      $(".js-filter").animate({ opacity: 1}, 250);
-      self.chart.attr('class', 'selectable');
-    }
-
     function brushend() {
-
       var data = self.model.get('data');
 
       if (brush.empty()) {
-
         $(".js-filter").animate({ opacity: 0 }, 0);
-
         self.chart.attr('class', 'x');
         self.chart.selectAll('.bar').classed('selected', false);
         d3.select(this).call(brush.extent([0, 0]));
-
       } else {
-
         var extent = self.brush.extent();
         var lo = extent[0];
         var hi = extent[1];
 
-        var a = Math.round(self.xScale(lo)/self.barWidth) * (100/data.length);
-        var b = Math.round(self.xScale(hi)/self.barWidth) * (100/data.length);
+        var a = Math.round(self.xScale(lo) / self.barWidth) * (100 / data.length);
+        var b = Math.round(self.xScale(hi) / self.barWidth) * (100 / data.length);
 
         defaultExtent = [a, b];
 
@@ -93,90 +164,29 @@ var Histogram = cdb.core.View.extend({
         .call(brush.event);
 
         self._adjustBrushHandles();
-
-        self.chart.selectAll('.bar').classed('selected', function(d, i) {
-          var a = Math.floor(i * self.barWidth);
-          var b = Math.floor(a + self.barWidth);
-          var LO = Math.floor(xScale(lo));
-          var HI = Math.floor(xScale(hi));
-          var isIn = (a > LO && a < HI) || (b > LO && b < HI) || (a <= LO && b >= HI);
-          return !isIn;
-        });
+        self._selectBars();
       }
-    }
-
-    function brushed() {
-      var extent = brush.extent();
-      var lo = extent[0];
-      var hi = extent[1];
-
-      var sum = 0;
-      var p;
-
-      self.chart.selectAll('.bar').classed('selected', function(d, i) {
-        var a = Math.floor(i * self.barWidth);
-        var b = Math.floor(a + self.barWidth);
-        var LO = Math.floor(xScale(lo));
-        var HI = Math.floor(xScale(hi));
-        var isIn = (a > LO && a < HI) || (b > LO && b < HI) || (a <= LO && b >= HI);
-
-        if (isIn) {
-          sum += d;
-        }
-
-        return  !isIn;
-      });
-
-      $(".js-val").text(sum);
-      self._adjustBrushHandles();
     }
 
     var data = this.model.get('data');
 
     this.brush
-    .on('brushstart', brushstart)
-    .on('brush', brushed)
+    .on('brushstart', this._brushstart)
+    .on('brush', this._brushed)
     .on('brushend', brushend);
 
-
-    var self = this;
     this.chart.append('g')
     .attr('class', 'brush')
     .call(this.brush)
     .selectAll('rect')
     .attr('y', 0)
     .attr('height', this.height)
-    
-    .on('mouseenter', function(d) {		
-      $(".tooltip").stop().fadeIn(250);
-    })
-    .on('mouseout', function(d) {		
-      d3.selectAll('.bar').classed('is-highlighted', false);
-      $(".tooltip").hide();
-    })
-    .on('mousemove', function(d) {		
-      var x = d3.event.offsetX - 10;
-      var a = Math.ceil(x/self.barWidth) ;
-      //console.log(data[a - 1]);
-
-      var bar = d3.select('.bar:nth-child(' + a + ')')
-      if (!bar.classed("selected")) {
-        var left = (a - 1)*self.barWidth  + 34 + (self.barWidth/2) - ($(".tooltip").width()/2);
-        console.log(left, a)
-        $(".tooltip").css({ top: self.chartHeight + self.yScale(data[a-1] + 10), left: left });
-        $(".tooltip").text(data[a - 1] + " unit");
-      } else {
-        $(".tooltip").stop().hide();
-      }
-
-      d3.selectAll('.bar').classed('is-highlighted', false);
-      bar.classed('is-highlighted', true);
-    });
-    
+    .on('mouseenter', this._onMouseEnter)
+    .on('mouseout', this._onMouseOut)
+    .on('mousemove', this._onMouseMove);
   },
 
   _adjustBrushHandles: function() {
-
     var extent = this.brush.extent();
     var lo = extent[0];
     var hi = extent[1];
@@ -190,34 +200,35 @@ var Histogram = cdb.core.View.extend({
     .attr('x2', this.xScale(hi));
 
     this.leftHandle
-    .attr('x', this.xScale(lo) - 3);
+    .attr('x', this.xScale(lo) - this.defaults.handleWidth / 2);
 
     this.rightHandle
-    .attr('x', this.xScale(hi) - 3);
+    .attr('x', this.xScale(hi) - this.defaults.handleWidth / 2);
+  },
+
+  _generateHandle: function() {
+    var handle = { width: this.defaults.handleWidth, height: this.defaults.handleHeight, radius: this.defaults.handleRadius };
+    var yPos = (this.defaults.handleHeight / 2) + (this.defaults.handleWidth / 2);
+
+    return this.chart.append('rect')
+    .attr('class', 'handle')
+    .attr('transform', 'translate(0, ' + yPos + ')')
+    .attr('width', handle.width)
+    .attr('height', handle.height)
+    .attr('rx', handle.radius)
+    .attr('ry', handle.radius);
+  },
+
+  _generateHandleLine: function() {
+    return this.chart.append('line').attr('class', 'l').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', this.height);
   },
 
   _generateHandles: function() {
-    this.leftHandleLine  = this.chart.append('line').attr('class', 'l').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', this.height);
-    this.rightHandleLine = this.chart.append('line').attr('class', 'l').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', this.height);
+    this.leftHandleLine  = this._generateHandleLine();
+    this.rightHandleLine = this._generateHandleLine();
 
-    var handle = { width: 6, height: 23, radius: 3 };
-    var yPos = (23/2) + (6/2);
-
-    this.leftHandle = this.chart.append('rect')
-    .attr('class', 'handle')
-    .attr('transform', 'translate(0, ' + yPos + ')')
-    .attr('width', handle.width)
-    .attr('height', handle.height)
-    .attr('rx', handle.radius)
-    .attr('ry', handle.radius);
-
-    this.rightHandle = this.chart.append('rect')
-    .attr('class', 'handle')
-    .attr('transform', 'translate(0, ' + yPos + ')')
-    .attr('width', handle.width)
-    .attr('height', handle.height)
-    .attr('rx', handle.radius)
-    .attr('ry', handle.radius);
+    this.leftHandle      = this._generateHandle();
+    this.rightHandle     = this._generateHandle();
   },
 
   _addXAxis: function() {
@@ -252,13 +263,12 @@ var Histogram = cdb.core.View.extend({
   },
 
   _generateHorizontalLines: function() {
-
-    var yData = d3.range(0, this.height + this.height/2, this.height/2);
-    var xData = d3.range(0, this.width + this.width/4, this.width/4);
+    var yData = d3.range(0, this.height + this.height / 2, this.height / 2);
+    var xData = d3.range(0, this.width + this.width / 4, this.width / 4);
 
     this.chart.append('g')
     .attr('class', 'y')
-    .selectAll('y')
+    .selectAll('.y')
     .data(yData)
     .enter().append('svg:line')
     .attr('class', 'y')
@@ -294,34 +304,44 @@ var Histogram = cdb.core.View.extend({
     this.tooltip = d3.select('.Widget').append('div')	
     .attr('class', 'tooltip');
 
-    var bar = this.chart.append('g')
+    var bars = this.chart.append('g')
     .attr('class', 'bars')
     .selectAll('.bar')
-    .data(data)
+    .data(data);
+
+    bars
     .enter()
     .append('rect')
     .attr('class', 'bar')
-    .attr('transform', function(d, i) { return 'translate(' + (i * self.barWidth) + ', 0 )'; })
-    .attr('y', function(d) { return self.height; })
+    .attr('transform', function(d, i) {
+      return 'translate(' + (i * self.barWidth) + ', 0 )';
+    })
+    .attr('y', self.height)
     .attr('height', 0)
     .attr('width', this.barWidth - 1);
 
-    bar.transition()
+    bars.transition()
     .ease('elastic')
-    .delay(function(d, i) { return Math.random() * (100 + i * 10); })
-    .duration(function(d, i) { return 750; })
-    .attr('height', function(d) { return d ? self.height - self.yScale(d) : 0; })
-    .attr('y', function(d){ return d ? self.yScale(d) : self.height; });
+    .duration(self.defaults.duration)
+    .delay(function(d, i) {
+      return Math.random() * (100 + i * 10);
+    })
+    .attr('height', function(d) {
+      return d ? self.height - self.yScale(d) : 0;
+    })
+    .attr('y', function(d) {
+      return d ? self.yScale(d) : self.height;
+    });
   },
 
   _getData: function() {
-    var data = d3.range(0, 30, 10).map(d3.random.bates(5));
+    /*var data = d3.range(0, 300, 10).map(d3.random.bates(5));
 
     data = _.map(data, function(d) {
       return Math.round(d  * 100);
-    });
+    });*/
 
-    var data = _.map(d3.range(7), function(d) {
+    var data = _.map(d3.range(Math.round(Math.random() * 10) + 3), function(d) {
       return Math.round(Math.random()) ? 100 : 50;
     });
 
