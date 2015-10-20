@@ -9,6 +9,21 @@
     <script src="../../src/cartodb.js"></script>
 
     <style>
+
+      .tooltip {
+        display: none;
+        position: absolute;
+        color: #fff;
+        padding: 5px;
+        min-width: 50px;
+        box-sizing: border-box;
+        text-align: center;
+        border-radius: 3px;
+        background: #000;
+        top: 0;
+        left: 0;
+      }
+
       body {
         padding: 40px;
         color: #333;
@@ -27,6 +42,10 @@
         opacity: 1;
       }
 
+      .Widget {
+        position: relative;
+      }
+
       .Widget-filter {
         opacity: 0;
       }
@@ -42,9 +61,13 @@
         shape-rendering: crispEdges;
       }
 
+      .bar.is-highlighted {
+        fill: #5BA45E;
+        opacity: 1;
+      }
       .bar.selected {
         fill: #DDD;
-        opacity: .8;
+        opacity: .7;
       }
       .bar {
         fill: #9DE0AD;
@@ -65,8 +88,8 @@
       }
 
       .y {
-        stroke: #f1f1f1;
-        stroke-width: 2;
+        stroke: #EEEEEE;
+        stroke-width: 1;
         shape-rendering: crispEdges;
       }
 
@@ -156,7 +179,7 @@
       </div>
       <script>
         function main() {
-          var widget = new Histogram({ className: '.chart', width: 300, height: 70 });
+          window.widget = new Histogram({ className: '.chart', width: 300, height: 70 });
         }
 
         var fn = function() {
