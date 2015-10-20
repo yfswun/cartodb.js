@@ -25,7 +25,8 @@ var Histogram = cdb.core.View.extend({
     this._setupDimensions();
     this._generateChart();
     this._generateHorizontalLines();
-    this._generateBars(this.width, this.height);
+    this._generateTooltip();
+    this._generateBars();
     this._generateHandles();
     this._setupBrush();
     this._addXAxis();
@@ -38,18 +39,27 @@ var Histogram = cdb.core.View.extend({
   _setupDimensions: function() {
     var data = this.model.get('data');
 
-    var margin = { top: 0, right: 10, bottom: 20, left: 10 };
-    var width  = this.width  = this.options.width  - margin.left - margin.right;
-    var height = this.height = this.options.height - margin.top  - margin.bottom;
+    this.margin = { top: 0, right: 10, bottom: 20, left: 10 };
 
-    // scale definition
-    this.xScale = d3.scale.linear().domain([0, 100]).range([0, width]);
-    this.yScale = d3.scale.linear().domain([0, d3.max(data, function(d) { return d; } )]).range([height, 0]);
-    this.zScale = d3.scale.ordinal().domain(d3.range(data.length)).rangeRoundBands([0, width]);
+    var width  = this.width  = this.options.width  - this.margin.left - this.margin.right;
+    var height = this.height = this.options.height - this.margin.top  - this.margin.bottom;
 
-    this.chartWidth  = this.width + margin.left + margin.right;
-    this.chartHeight = this.height + margin.top + margin.bottom;
-    this.barWidth    = width / data.length;
+    this._setupScales();
+
+    this.chartWidth  = this.width  + this.margin.left + this.margin.right;
+    this.chartHeight = this.height + this.margin.top  + this.margin.bottom;
+  },
+
+  _setupScales: function() {
+    var data = this.model.get('data');
+    this.xScale = d3.scale.linear().domain([0, 100]).range([0, this.width]);
+    this.yScale = d3.scale.linear().domain([0, d3.max(data, function(d) { return d; } )]).range([this.height, 0]);
+    this.zScale = d3.scale.ordinal().domain(d3.range(data.length)).rangeRoundBands([0, this.width]);
+  },
+
+  _calcBarWidth: function() {
+    var width  = this.width  = this.options.width  - this.margin.left - this.margin.right;
+    this.barWidth = width / this.model.get('data').length;
   },
 
   _generateChart: function() {
@@ -223,12 +233,23 @@ var Histogram = cdb.core.View.extend({
     return this.chart.append('line').attr('class', 'l').attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', this.height);
   },
 
+  _removeHandles: function() {
+    this.leftHandleLine.remove();
+    this.rightHandleLine.remove();
+    this.leftHandle.remove();
+    this.rightHandle.remove();
+  },
+
   _generateHandles: function() {
     this.leftHandleLine  = this._generateHandleLine();
     this.rightHandleLine = this._generateHandleLine();
 
     this.leftHandle      = this._generateHandle();
     this.rightHandle     = this._generateHandle();
+  },
+
+  _removeXAxis: function() {
+    d3.select('.axis').remove();
   },
 
   _addXAxis: function() {
@@ -297,12 +318,31 @@ var Histogram = cdb.core.View.extend({
     .attr('y2', this.height);
   },
 
-  _generateBars: function(width, height) {
+  _generateTooltip: function() {
+    this.tooltip = d3.select('.Widget').append('div')	
+    .attr('class', 'tooltip');
+  },
+
+  _update: function() {
+    this._getData();
+    this._setupDimensions();
+
+    this.chart.selectAll(".bar").remove();
+    this.chart.select(".brush").remove();
+    this._removeHandles();
+    this._generateBars();
+    this._generateHandles();
+    this._removeXAxis();
+    this._addXAxis();
+
+    this._setupBrush();
+  },
+
+  _generateBars: function() {
     var self = this;
     var data = this.model.get('data').reverse();
 
-    this.tooltip = d3.select('.Widget').append('div')	
-    .attr('class', 'tooltip');
+    this._calcBarWidth();
 
     var bars = this.chart.append('g')
     .attr('class', 'bars')
