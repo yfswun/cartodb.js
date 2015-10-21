@@ -173,6 +173,7 @@
         <div class="Widget-filter Widget-contentSpaced js-filter">
           <p class="Widget-textSmaller Widget-textSmaller--bold Widget-textSmaller--upper js-val"></p>
           <div class="Widget-filterButtons">
+            <button class="Widget-link Widget-filterButton js-zoom">zoom</button>
             <button class="Widget-link Widget-filterButton js-clear">clear</button>
           </div>
         </div>
@@ -180,7 +181,7 @@
       </div>
       <script>
         function main() {
-          window.widget = new Histogram({ className: '.chart', width: 300, height: 70 });
+          window.widget = new Histogram({ className: 'chart', width: 300, height: 70 });
         }
 
         var fn = function() {
