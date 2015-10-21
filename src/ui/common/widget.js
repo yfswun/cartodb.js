@@ -1,3 +1,9 @@
+var HistogramModel = cdb.core.Model.extend({
+  defaults: {
+    total: 0
+  }
+});
+
 var Histogram = cdb.core.View.extend({
 
   events: {
@@ -9,14 +15,15 @@ var Histogram = cdb.core.View.extend({
     handleWidth: 6,
     handleHeight: 23,
     handleRadius: 3,
+    transitionType: 'elastic'
   },
 
   initialize: function() {
-    _.bindAll(this, '_selectBars', '_adjustBrushHandles', '_brushed', '_brushstart', '_reset', '_onMouseMove', '_onMouseEnter', '_onMouseOut');
+    _.bindAll(this, '_selectBars', '_zoom', '_adjustBrushHandles', '_brushed', '_brushstart', '_reset', '_onMouseMove', '_onMouseEnter', '_onMouseOut');
 
     $(".js-clear").on("click", this._reset);
-    this.model = new cdb.core.Model();
-    this.model.bind('change:total', this._onChangeTotal, this);
+    $(".js-zoom").on("click", this._zoom);
+    this._setupModel();
     this._getData();
     this.render();
   },
@@ -35,6 +42,11 @@ var Histogram = cdb.core.View.extend({
 
   _onChangeTotal: function() {
     $(".js-val").text(this.model.get('total'));
+  },
+
+  _setupModel: function() {
+    this.model = new HistogramModel();
+    this.model.bind('change:total', this._onChangeTotal, this);
   },
 
   _setupDimensions: function() {
@@ -64,7 +76,7 @@ var Histogram = cdb.core.View.extend({
   },
 
   _generateChart: function() {
-    this.chart = d3.select(this.options.className)
+    this.chart = d3.select('.' + this.options.className)
     .attr('width',  this.chartWidth)
     .attr('height', this.chartHeight)
     .append('g')
@@ -97,7 +109,6 @@ var Histogram = cdb.core.View.extend({
   },
 
   _brushed: function() {
-
     var sum = 0;
 
     this._selectBars(function(d, i) {
@@ -152,7 +163,6 @@ var Histogram = cdb.core.View.extend({
 
       if (brush.empty()) {
         $(".js-filter").animate({ opacity: 0 }, 0);
-        self.chart.attr('class', 'x');
         self.chart.selectAll('.bar').classed('selected', false);
         d3.select(this).call(brush.extent([0, 0]));
       } else {
@@ -174,6 +184,7 @@ var Histogram = cdb.core.View.extend({
         .call(brush.extent(defaultExtent))
         .call(brush.event);
 
+        self.model.set({ a: Math.round(self.xScale(lo) / self.barWidth), b: Math.round(self.xScale(hi) / self.barWidth)});
         self._adjustBrushHandles();
         self._selectBars();
       }
@@ -292,7 +303,6 @@ var Histogram = cdb.core.View.extend({
     .selectAll('.x')
     .data(range.slice(1, range.length - 1))
     .enter().append('svg:line')
-    .attr('class', 'x')
     .attr('y1', 0)
     .attr('x1', function(d) { return d; })
     .attr('y2', this.height)
@@ -327,8 +337,10 @@ var Histogram = cdb.core.View.extend({
     .attr('class', 'tooltip');
   },
 
-  _update: function() {
-    this._getData();
+  _zoom: function() {
+    this._removeBrush();
+    var data = this.model.get('data');
+    this.model.set('data', data.slice(this.model.get('a'), this.model.get('b')).reverse());
     this._setupDimensions();
 
     this.chart.selectAll(".bar").remove();
@@ -365,7 +377,7 @@ var Histogram = cdb.core.View.extend({
     .attr('width', this.barWidth - 1);
 
     bars.transition()
-    .ease('elastic')
+    .ease(this.defaults.transitionType)
     .duration(self.defaults.duration)
     .delay(function(d, i) {
       return Math.random() * (100 + i * 10);
@@ -392,14 +404,15 @@ var Histogram = cdb.core.View.extend({
     this.model.set('data', data);
   },
 
+  _removeBrush: function() {
+    this.brush
+    .clear()
+    .event(d3.select('.brush'));
+    this.chart.classed('selectable', false);
+  },
+
   _reset: function() {
-    var self = this;
-    $(".js-filter").animate({ opacity: 0 }, { duration: 250, complete: function() {
-      self.brush
-      .clear()
-      .event(d3.select('.brush'));
-      self.chart.attr('class', 'x');
-    }});
+    this._removeBrush();
   }
 });
 
