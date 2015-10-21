@@ -143,8 +143,8 @@ var Histogram = cdb.core.View.extend({
   },
 
   _onMouseMove: function(d) {
-    var x = d3.event.offsetX - 10;
-    var a = Math.ceil(x/this.barWidth) ;
+    var x = d3.event.offsetX - this.margin.left;
+    var a = Math.ceil(x/this.barWidth);
     var data = this.model.get('data');
 
     var bar = d3.select('.bar:nth-child(' + a + ')');
@@ -165,10 +165,10 @@ var Histogram = cdb.core.View.extend({
     }
   },
 
-  _selectRange: function(self, a, b) {
+  _selectRange: function(self, start, end) {
     d3.select(self).transition()
     .duration(this.brush.empty() ? 0 : 150)
-    .call(this.brush.extent([a, b]))
+    .call(this.brush.extent([start, end]))
     .call(this.brush.event);
   },
 
@@ -183,6 +183,7 @@ var Histogram = cdb.core.View.extend({
       console.log('end');
 
       var data = self.model.get('data');
+      var a, b;
 
       if (brush.empty()) {
         $(".js-filter").animate({ opacity: 0 }, 0);
@@ -193,8 +194,8 @@ var Histogram = cdb.core.View.extend({
         var lo = extent[0];
         var hi = extent[1];
 
-        var a = Math.round(self.xScale(lo) / self.barWidth) * (100 / data.length);
-        var b = Math.round(self.xScale(hi) / self.barWidth) * (100 / data.length);
+        a = Math.round(self.xScale(lo) / self.barWidth) * (100 / data.length);
+        b = Math.round(self.xScale(hi) / self.barWidth) * (100 / data.length);
 
         if (!d3.event.sourceEvent) {
           return;
@@ -207,11 +208,11 @@ var Histogram = cdb.core.View.extend({
       }
 
       if (d3.event.sourceEvent && a === undefined && b === undefined) {
-        var x = d3.event.sourceEvent.offsetX - 10;
+        var x = d3.event.sourceEvent.offsetX - self.margin.left;
         var p = Math.ceil(x/self.barWidth);
         var a = (p - 1) * (100/data.length);
         var b = (p) * (100/data.length);
-        this.model.set({ a: a, b: b });
+        self.model.set({ a: a, b: b });
         self._selectRange(this, a, b);
       }
     }
