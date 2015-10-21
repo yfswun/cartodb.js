@@ -7,7 +7,8 @@ var HistogramModel = cdb.core.Model.extend({
 var Histogram = cdb.core.View.extend({
 
   events: {
-    //'click .js-clear': '_reset'
+    'click .js-clear': '_reset',
+    'click .js-zoom': '_zoom'
   },
 
   defaults: {
@@ -21,14 +22,20 @@ var Histogram = cdb.core.View.extend({
   initialize: function() {
     _.bindAll(this, '_selectBars', '_zoom', '_adjustBrushHandles', '_brushed', '_brushstart', '_reset', '_onMouseMove', '_onMouseEnter', '_onMouseOut');
 
-    $(".js-clear").on("click", this._reset);
-    $(".js-zoom").on("click", this._zoom);
     this._setupModel();
     this._getData();
-    this.render();
   },
 
   render: function() {
+
+    var template = _.template(this.options.template);
+
+    this.$el.html(
+      template(
+        this.model.attributes
+      )
+    );
+
     this._setupDimensions();
     this._generateChart();
     this._generateHorizontalLines();
@@ -38,6 +45,9 @@ var Histogram = cdb.core.View.extend({
     this._generateHandles();
     this._setupBrush();
     this._addXAxis();
+
+    return this;
+
   },
 
   _onChangeTotal: function() {
@@ -76,7 +86,7 @@ var Histogram = cdb.core.View.extend({
   },
 
   _generateChart: function() {
-    this.chart = d3.select('.' + this.options.className)
+    this.chart = d3.select(this.$el.find('.chart')[0])
     .attr('width',  this.chartWidth)
     .attr('height', this.chartHeight)
     .append('g')
@@ -86,6 +96,7 @@ var Histogram = cdb.core.View.extend({
   _brushstart: function() {
     $(".js-filter").animate({ opacity: 1 }, 250);
     this.chart.attr('class', 'selectable');
+    console.log('start');
   },
 
   _selectBars: function(callback) {
@@ -110,6 +121,8 @@ var Histogram = cdb.core.View.extend({
 
   _brushed: function() {
     var sum = 0;
+
+    console.log('move');
 
     this._selectBars(function(d, i) {
       sum += d;
@@ -152,6 +165,13 @@ var Histogram = cdb.core.View.extend({
     }
   },
 
+  _selectRange: function(self, a, b) {
+    d3.select(self).transition()
+    .duration(this.brush.empty() ? 0 : 150)
+    .call(this.brush.extent([a, b]))
+    .call(this.brush.event);
+  },
+
   _setupBrush: function() {
     var self = this;
 
@@ -159,6 +179,9 @@ var Histogram = cdb.core.View.extend({
     var brush = this.brush = d3.svg.brush().x(this.xScale);
 
     function brushend() {
+
+      console.log('end');
+
       var data = self.model.get('data');
 
       if (brush.empty()) {
@@ -173,20 +196,23 @@ var Histogram = cdb.core.View.extend({
         var a = Math.round(self.xScale(lo) / self.barWidth) * (100 / data.length);
         var b = Math.round(self.xScale(hi) / self.barWidth) * (100 / data.length);
 
-        defaultExtent = [a, b];
-
         if (!d3.event.sourceEvent) {
           return;
         }
 
-        d3.select(this).transition()
-        .duration(brush.empty() ? 0 : 150)
-        .call(brush.extent(defaultExtent))
-        .call(brush.event);
-
+        self._selectRange(this, a, b);
         self.model.set({ a: Math.round(self.xScale(lo) / self.barWidth), b: Math.round(self.xScale(hi) / self.barWidth)});
         self._adjustBrushHandles();
         self._selectBars();
+      }
+
+      if (d3.event.sourceEvent && a === undefined && b === undefined) {
+        var x = d3.event.sourceEvent.offsetX - 10;
+        var p = Math.ceil(x/self.barWidth);
+        var a = (p - 1) * (100/data.length);
+        var b = (p) * (100/data.length);
+        this.model.set({ a: a, b: b });
+        self._selectRange(this, a, b);
       }
     }
 
@@ -333,7 +359,7 @@ var Histogram = cdb.core.View.extend({
   },
 
   _generateTooltip: function() {
-    this.tooltip = d3.select('.Widget').append('div')	
+    this.tooltip = d3.select(this.$el.find('.Widget')[0]).append('div')	
     .attr('class', 'tooltip');
   },
 
@@ -369,6 +395,7 @@ var Histogram = cdb.core.View.extend({
     .enter()
     .append('rect')
     .attr('class', 'bar')
+    .attr('data', function(d) { return d; })
     .attr('transform', function(d, i) {
       return 'translate(' + (i * self.barWidth) + ', 0 )';
     })

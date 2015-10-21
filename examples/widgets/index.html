@@ -159,14 +159,16 @@
 
   </head>
   <body>
+
+    <script type="text/template" id="histogram_template">
     <div class="Widget Widget--light">
       <div class="Widget-header">
         <h3 class="Widget-textBig">Transactions by visitors NBA stadium arenas big ones</h3>
         <dl class="Widget-info Widget-textSmaller Widget-textSmaller--upper">
-          <dt class="Widget-infoItem">0 null rows</dt>
-          <dt class="Widget-infoItem">17k min</dt>
-          <dt class="Widget-infoItem">142k avg</dt>
-          <dt class="Widget-infoItem">1.13m max</dt>
+          <dt class="Widget-infoItem js-null">0 null rows</dt>
+          <dt class="Widget-infoItem js-min">17k min</dt>
+          <dt class="Widget-infoItem js-avg">142k avg</dt>
+          <dt class="Widget-infoItem js-max">1.13m max</dt>
         </dl>
       </div>
       <div class="Widget-content">
@@ -179,10 +181,18 @@
         </div>
         <svg class="Widget-chart chart"></svg>
       </div>
-      <script>
-        function main() {
-          window.widget = new Histogram({ className: 'chart', width: 300, height: 70 });
-        }
+    </script>
+    <script>
+      function main() {
+        var widget = new Histogram({ 
+          template: $("#histogram_template").html(),
+          width: 300,
+          height: 70,
+        });
+        window.widget = widget;
+
+        $('body').append(widget.render().el);
+      }
 
         var fn = function() {
           cartodb.load('../../src/', main);
