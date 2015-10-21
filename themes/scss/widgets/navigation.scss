@@ -8,13 +8,12 @@
   width: 100%;
   margin-top: $sMargin-element;
 }
-.Widget-navDotsItem {
-  display: inline-block;
-  width: 8px;
+.Widget-navDots {
   height: 8px;
-  padding: 0;
-  border: none;
-  border-radius: 8px;
+}
+.Widget-dot--navigation {
+  display: inline-block;
+  vertical-align: top;
   &:hover {
     cursor: pointer;
   }
@@ -26,4 +25,8 @@
 }
 .Widget-navDotsItem.is-disabled {
   @include opacity(0.5);
+}
+.Widget-navArrows {
+  width: 45px;
+  height: 9px;
 }

@@ -30,7 +30,10 @@ module.exports = {
           "test/lib/sinon-1.3.4.js",
           "test/lib/sinon-ie.js",
           "src/cartodb.js",
-          "src/core/**/*.js",
+          "src/core/model.js",
+          "src/geo/ui/widgets/widget_model.js",
+          "src/geo/ui/widgets/widget_collection.js",
+          "src/core/*.js",
           "src/geo/geometry.js",
           "src/geo/map.js",
           "src/geo/ui/header.js",
@@ -49,6 +52,8 @@ module.exports = {
           "src/geo/ui/tooltip.js",
           "src/geo/ui/time_slider.js",
           "src/geo/ui/fullscreen.js",
+          "src/geo/ui/widget.js",
+          "src/geo/ui/widgets/**/*.js",
           "src/geo/sublayer.js",
           "src/geo/layer_definition.js",
           "src/geo/common.js",
@@ -84,7 +89,8 @@ module.exports = {
           "src/vis/overlays.js",
           "src/api/layers.js",
           "src/api/sql.js",
-          "src/api/vis.js"
+          "src/api/vis.js",
+          "src/windshaft/client.js"
         ],
         options: {
           keepRunner: true,

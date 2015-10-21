@@ -20,11 +20,14 @@
     root.cdb.image = {};
     root.cdb.geo = {};
     root.cdb.geo.ui = {};
+    root.cdb.geo.ui.Widget = {};
     root.cdb.geo.geocoder = {};
     root.cdb.ui = {};
     root.cdb.ui.common = {};
     root.cdb.vis = {};
     root.cdb.decorators = {};
+    root.cdb.windshaft = {};
+
     /**
      * global variables
      */
@@ -60,6 +63,7 @@
         'core/view.js',
         'core/loader.js',
         'core/util.js',
+        'core/datasource.js',
 
         'geo/geocoder.js',
         'geo/geometry.js',
@@ -82,6 +86,17 @@
         'geo/ui/infobox.js',
         'geo/ui/tooltip.js',
         'geo/ui/fullscreen.js',
+
+        // Widgets
+        'geo/ui/widget.js',
+        'geo/ui/widgets/widget_model.js',
+        'geo/ui/widgets/widget_collection.js',
+        'geo/ui/widgets/loader.js',
+        'geo/ui/widgets/list/list_paginator_view.js',
+        'geo/ui/widgets/list/list_item_view.js',
+        'geo/ui/widgets/list/list_model.js',
+        'geo/ui/widgets/list/list_view.js',
+        // End widgets
 
         'geo/sublayer.js',
         'geo/layer_definition.js',
@@ -121,7 +136,10 @@
         // PUBLIC API
         'api/layers.js',
         'api/sql.js',
-        'api/vis.js'
+        'api/vis.js',
+
+        'windshaft/client.js',
+        'windshaft/public_map.js'
     ];
 
     cdb.init = function(ready) {

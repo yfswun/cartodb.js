@@ -104,7 +104,7 @@ var Vis = cdb.core.View.extend({
     this.https = false;
     this.overlays = [];
     this.moduleChecked = false;
-    this.layersLoading = 0;
+    this.layersing = 0;
 
     if (this.options.mapView) {
       this.mapView = this.options.mapView;
@@ -260,6 +260,7 @@ var Vis = cdb.core.View.extend({
 
   load: function(data, options) {
     var self = this;
+    this._data = data;
 
     if (typeof(data) === 'string') {
 
@@ -470,8 +471,58 @@ var Vis = cdb.core.View.extend({
       this.mapView.bind('newLayerView', this.addTooltip, this);
     }
 
+    // Create an instance of a map (datasource)
+    var windshaftMap;
+    if (data.datasources && data.datasources.length) {
+      // Only one datasource?
+      var datasource = _.first(data.datasources);
+      var datasourceLayer = _.find(data.layers, function(l) {
+        return l.datasource === datasource.id
+      });
+
+      var layerGroupLayer = data.layers[1];
+      var windshaftClient = new cdb.windshaft.Client({
+        ajax: $.ajax,
+        user_name: datasource.user_name,
+        maps_api_template: datasource.maps_api_template,
+        stat_tag: datasource.stat_tag,
+        force_compress: false,
+        force_cors: false,
+        endpoint: MapBase.BASE_URL // This is different for named_maps
+      });
+
+      var layerDefinition = new LayerDefinition(datasourceLayer.options.layer_definition, {}, data.widgets);
+      windshaftMap = windshaftClient.instantiateMap(layerDefinition);
+
+      this.datasource = new cdb.core.Datasource(datasource, { windshaftMap: windshaftMap });
+
+      _.each(data.widgets, function(d) {
+        var opts = d.options;
+        var type = d.type;
+
+        var v = self.addWidget(
+          d.type,
+          _.extend(
+            opts,
+            {
+              datasource: self.datasource
+            }
+          )
+        );
+
+        $('body').append(v.render().el);
+      });
+    }
+
     this.map.layers.reset(_.map(data.layers, function(layerData) {
-      return Layers.create(layerData.type || layerData.kind, self, layerData);
+      var model = Layers.create(layerData.type || layerData.kind, self, layerData);
+
+      // Assign the map (datasource) to the model
+      if (windshaftMap) {
+        model.windshaftMap = windshaftMap;
+      }
+
+      return model;
     }));
 
     this.overlayModels.reset(data.overlays);
@@ -499,6 +550,7 @@ var Vis = cdb.core.View.extend({
       }
 
     }
+
 
     _.defer(function() {
       self.trigger('done', self, self.getLayers());
@@ -862,6 +914,31 @@ var Vis = cdb.core.View.extend({
     return _.compact(legends).reverse();
   },
 
+  addWidget: function(type, opts) {
+    var _widgetTypes = {
+      'list': 'ListView'
+    };
+    var datasource = opts.datasource;
+
+    if (!_widgetTypes[type]) {
+      throw new Error('Widget ' + type + ' not defined');
+    }
+
+    if (!datasource && opts.layer) {
+      datasource = this.datasource;
+    }
+
+    return new cdb.geo.ui.Widget[_widgetTypes[type]](
+      _.extend(
+        opts,
+        {
+          datasource: datasource,
+          type: type
+        }
+      )
+    );
+  },
+
   addOverlay: function(overlay) {
 
     overlay.map = this.map;
@@ -1200,7 +1277,7 @@ var Vis = cdb.core.View.extend({
         var fields = _.pluck(infowindowFields.fields, 'name');
         var cartodb_id = data.cartodb_id;
 
-        layerView.fetchAttributes(layer, cartodb_id, fields, function(attributes) {
+        layerView.model.windshaftMap.fetchAttributes(layer, cartodb_id, fields, function(attributes) {
 
           // Old viz.json doesn't contain width and maxHeight properties
           // and we have to get the default values if there are not defined.

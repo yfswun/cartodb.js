@@ -2,149 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>Legends | CartoDB.js</title>
-
-    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" /> 
-
-    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
-    <script>
-
-      currentLegend = null;
-      legends       = {};
-      legendsArray  = [];
-
-      function selectLegend(e){
-
-        e.stopPropagation();
-        e.preventDefault();
-
-        var target = e.target;
-        var $link = $(e.target);
-        var type = $link.attr("data-legend");
-
-        if (type === 'stacked') {
-
-        $(".legend-selector a").addClass("selected");
-
-          var stackedLegend = new cdb.geo.ui.Legend.Stacked({
-            data: legendsArray
-          });
-
-          currentLegend = stackedLegend;
-
-        } else { 
-
-          $(".legend-selector a.selected").removeClass("selected");
-          $link.addClass("selected");
-
-          currentLegend = legends[type].legend;
-        }
-
-        currentLegend.addTo(".legends");
-
-        // $("#map .legends").html(currentLegend.render().$el);
-
-      }
-
-      function renderLegendList() {
-
-        _.each(legends, function(legend, type) {
-
-          var li = '<li><a href="#" data-legend="' + type + '">' + legend.title + '</a></li>';
-          $(".legend-selector").append(li);
-
-        });
-
-        var li = '<li><a href="#" data-legend="stacked">Stacked</a></li>';
-        $(".legend-selector").append(li);
-
-      }
-
-      window.onload = function() {
-
-          var customLegend = new cdb.geo.ui.Legend.Custom({
-            title: "Custom Legend",
-            data: [
-              { name: "Natural Parks",  value: "#58A062" },
-              { name: "Villages",       value: "#F07971" },
-              { name: "Rivers",         value: "#54BFDE" },
-              { name: "Fields",         value: "#9BC562" },
-              { name: "Caves",          value: "#FABB5C" }
-            ]
-          });
-
-          var categoryLegend = new cdb.geo.ui.Legend.Category({
-            title: "Category Legend",
-            data: [
-              { name: "Airport Parks", value: "img/airport-24@2x.png",   type: "image" },
-              { name: "Heart",         value: "img/heart-24@2x.png",     type: "image" },
-              { name: "Zoom",          value: "img/zoo-24@2x.png",       type: "image" },
-              { name: "Fields",        value: "img/tennis-24@2x.png",    type: "image" },
-              { name: "Caves",         value: "img/town-hall-24@2x.png", type: "image" },
-            ]
-          });
-
-          var bubbleLegend = new cdb.geo.ui.Legend.Bubble({
-            title: "Bubble Legend",
-            min: 21, max: 20, color: "red"
-          });
-
-          var densityLegend = new cdb.geo.ui.Legend.Density({
-            title: "Density Legend",
-            left: "0", right: "10", colors: [ "#58A062", "#F07971", "#54BFDE", "#9BC562", "#FABB5C" ]
-          });
-
-          var intensityLegend = new cdb.geo.ui.Legend.Intensity({
-            title: "Intensity Legend",
-            left: "10", right: "20", color: "#f1f1f1"
-          });
-
-          legends = {
-            custom:    { legend: customLegend,    title: "Custom Legend" },
-            bubble:    { legend: bubbleLegend,    title: "Bubble Legend" },
-            density:   { legend: densityLegend,   title: "Density Legend" },
-            category:  { legend: categoryLegend,  title: "Category Legend" },
-            intensity: { legend: intensityLegend, title: "Intensity Legend" }
-          };
-
-          legendsArray = [{
-            title: "Category Legend",
-            data: [
-              { name: "Natural Parks",  value: "#58A062" },
-              { name: "Villages",       value: "#F07971" },
-              { name: "Rivers",         value: "#54BFDE" },
-              { name: "Fields",         value: "#9BC562" },
-              { name: "Caves",          value: "#FABB5C" }
-            ]
-          }, {
-            type: "bubble",
-            title: "Bubble Legend",
-            min: 21, max: 20, color: "red"
-          }];
-
-          renderLegendList();
-
-
-          $(".legend-selector a").click(selectLegend);
-
-          var map_viz_url = 'http://documentation.cartodb.com/api/v2/viz/2b13c956-e7c1-11e2-806b-5404a6a683d5/viz.json';
-
-          var onVisDone = function(vis, layers) {
-
-            layers[1].setInteraction(true);
-
-            layers[1].on('featureOver', function(e, latlng, pos, data, layerNumber) {
-              cartodb.log.log(e, latlng, pos, data, layerNumber);
-            });
-
-          };
-
-          cartodb.createVis('map', map_viz_url, { legends: false, no_cdn: true }).done(onVisDone);
-
-      }
-
-    </script>
-
+    <title>CartoDB.js load example</title>
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+    <link rel="stylesheet" href="/dist/themes/css/cartodb.css" />
+    <script src="/src/cartodb.js"></script>
     <style type="text/css">
       html, body {
         position:relative;
@@ -154,51 +15,435 @@
         padding: 0;
         margin: 0;
       }
-
-      .legend-selector {
-        position:absolute;
-        top: 20px; right: 20px;
-        margin: 0; padding: 0;
-        z-index: 100;
+      .Widget {
+        position: absolute;
+        bottom: 30px;
+        right: 20px;
       }
-
-      .legend-selector li {
-        display:inline-block;
-        margin: 0 0 0 10px; padding: 0;
-        list-style:none;
-      }
-
-      .legend-selector li a {
-        display:block;
-        text-decoration:none;
-        text-align:center;
-        font: normal 13px "Helvetica",Arial;
-        color: #858585;
-        webkit-box-shadow: rgba(0, 0, 0, 0.2) 0 0 4px 2px;
-        -moz-box-shadow: rgba(0, 0, 0, 0.2) 0 0 4px 2px;
-        box-shadow: rgba(0, 0, 0, 0.2) 0 0 4px 2px;
-        -webkit-border-radius: 4px;
-        -moz-border-radius: 4px;
-        -ms-border-radius: 4px;
-        -o-border-radius: 4px;
-        border-radius: 4px;
-        border: 1px solid #999;
-        background: #FFF;
-        z-index: 5;
-        padding: 10px;
-      }
-
-      .legend-selector li a.selected {
-        background:#f1f1f1;
-      }
-
     </style>
-
   </head>
   <body>
-    <ul class="legend-selector"> </ul>
-    <div id="map">
-      <div class="legends"></div>
-    </div>
+    <div id="map"></div>
+
+    <script type="text/template" id="list_template">
+      <div class="Widget-header">
+        <div class="Widget-title Widget-contentSpaced">
+          <h3 class="Widget-textBig"><%= title %></h3>
+        </div>
+        <dl class="Widget-info">
+          <dt class="Widget-infoItem Widget-textSmaller Widget-textSmaller--upper"><%= itemsCount %> places</dt>
+        </dl>
+      </div>
+      <div class="Widget-content js-content">
+        <ul class="Widget-list Widget-list--withBorders">
+          <li class="Widget-listItem Widget-listItem--withBorders Widget-listItem--fake"></li>
+          <li class="Widget-listItem Widget-listItem--withBorders Widget-listItem--fake"></li>
+          <li class="Widget-listItem Widget-listItem--withBorders Widget-listItem--fake"></li>
+          <li class="Widget-listItem Widget-listItem--withBorders Widget-listItem--fake"></li>
+        </ul>
+      </div>
+    </script>
+
+    <script type="text/template" id="list_item_template">
+      <button type="button" class="Widget-listItemButton">
+        <div class="Widget-contentSpaced Widget-contentSpaced--topAligned Widget-contentSpaced--start">
+          <em class="Widget-dot Widget-listDot"></em>
+          <div class="Widget-contentFull">
+            <p class="Widget-textSmall Widget-textSmall--upper"><%= district %></p>
+            <dl class="Widget-textSmaller Widget-textSmaller--noEllip u-tSpace">
+              <dd class="Widget-textSmaller--bold Widget-textSmaller--dark"><%= trees %></dd>
+              <dt>trees</dt>
+            </dl>
+          </div>
+        </div>
+      </button>
+    </script>
+
+    <script>
+      window.onload = function() {
+        cartodb.load('/src/', function() {
+
+          var vizJSON = {
+            "id": "ece6faac-7271-11e5-a85f-04013fc66a01",
+            "version": "0.1.0",
+            "title": "districtes_barcelona 1",
+            "likes": 0,
+            "description": null,
+            "scrollwheel": true,
+            "legends": true,
+            "url": null,
+            "map_provider": "leaflet",
+            "bounds": [
+              [
+                41.123331876446066,
+                1.6376495361328123
+              ],
+              [
+                41.588742636696765,
+                2.6332855224609375
+              ]
+            ],
+            "center": "[41.356453237583786, 2.135467529296875]",
+            "zoom": 11,
+            "updated_at": "2015-10-14T12:49:48+00:00",
+            "layers": [
+              {
+                "options": {
+                  "default": "true",
+                  "url": "http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png",
+                  "subdomains": "abcd",
+                  "minZoom": "0",
+                  "maxZoom": "18",
+                  "name": "Positron",
+                  "className": "positron_rainbow_labels",
+                  "attribution": "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors &copy; <a href= \"http://cartodb.com/attributions\">CartoDB</a>",
+                  "labels": {
+                    "url": "http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png"
+                  },
+                  "urlTemplate": "http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+                },
+                "infowindow": null,
+                "tooltip": null,
+                "id": "fb84bd9b-d704-4b19-8f1c-1438de211597",
+                "order": 0,
+                "type": "tiled"
+              },
+              {
+                "type": "layergroup",
+                "datasource": "datasource1",
+                "options": {
+                  "layer_definition": {
+                    "stat_tag": "ece6faac-7271-11e5-a85f-04013fc66a01",
+                    "version": "1.0.1",
+                    "layers": [
+                      {
+                        "id": "76b7540c-6396-4e71-8f19-6d8f9db9ef15",
+                        "type": "CartoDB",
+                        "infowindow": {
+                          "fields": [
+                            {
+                              "name": "area",
+                              "title": true,
+                              "position": 0
+                            },
+                            {
+                              "name": "c_distri",
+                              "title": true,
+                              "position": 1
+                            },
+                            {
+                              "name": "coord_x",
+                              "title": true,
+                              "position": 2
+                            },
+                            {
+                              "name": "coord_y",
+                              "title": true,
+                              "position": 3
+                            },
+                            {
+                              "name": "dones",
+                              "title": true,
+                              "position": 4
+                            },
+                            {
+                              "name": "homes",
+                              "title": true,
+                              "position": 5
+                            },
+                            {
+                              "name": "n_distri",
+                              "title": true,
+                              "position": 6
+                            },
+                            {
+                              "name": "perim",
+                              "title": true,
+                              "position": 7
+                            },
+                            {
+                              "name": "web_1",
+                              "title": true,
+                              "position": 8
+                            },
+                            {
+                              "name": "web_2",
+                              "title": true,
+                              "position": 9
+                            },
+                            {
+                              "name": "web_3",
+                              "title": true,
+                              "position": 10
+                            }
+                          ],
+                          "template_name": "table/views/infowindow_light",
+                          "template": "<div class=\"cartodb-popup v2\">\n  <a href=\"#close\" class=\"cartodb-popup-close-button close\">x</a>\n  <div class=\"cartodb-popup-content-wrapper\">\n    <div class=\"cartodb-popup-content\">\n      {{#content.fields}}\n        {{#title}}<h4>{{title}}</h4>{{/title}}\n        {{#value}}\n          <p {{#type}}class=\"{{ type }}\"{{/type}}>{{{ value }}}</p>\n        {{/value}}\n        {{^value}}\n          <p class=\"empty\">null</p>\n        {{/value}}\n      {{/content.fields}}\n    </div>\n  </div>\n  <div class=\"cartodb-popup-tip-container\"></div>\n</div>\n",
+                          "alternative_names": {},
+                          "width": 226,
+                          "maxHeight": 180
+                        },
+                        "tooltip": {
+                          "fields": [
+                            {
+                              "name": "area",
+                              "title": true,
+                              "position": 0
+                            },
+                            {
+                              "name": "c_distri",
+                              "title": true,
+                              "position": 1
+                            },
+                            {
+                              "name": "coord_x",
+                              "title": true,
+                              "position": 2
+                            },
+                            {
+                              "name": "coord_y",
+                              "title": true,
+                              "position": 3
+                            },
+                            {
+                              "name": "dones",
+                              "title": true,
+                              "position": 4
+                            },
+                            {
+                              "name": "homes",
+                              "title": true,
+                              "position": 5
+                            },
+                            {
+                              "name": "n_distri",
+                              "title": true,
+                              "position": 6
+                            },
+                            {
+                              "name": "perim",
+                              "title": true,
+                              "position": 7
+                            },
+                            {
+                              "name": "web_1",
+                              "title": true,
+                              "position": 8
+                            },
+                            {
+                              "name": "web_2",
+                              "title": true,
+                              "position": 9
+                            },
+                            {
+                              "name": "web_3",
+                              "title": true,
+                              "position": 10
+                            }
+                          ],
+                          "template_name": "tooltip_light",
+                          "template": "<div class=\"cartodb-tooltip-content-wrapper\">\n  <div class=\"cartodb-tooltip-content\">\n  {{#fields}}\n    {{#title}}\n    <h4>{{title}}</h4>\n    {{/title}}\n    <p>{{{ value }}}</p>\n  {{/fields}}\n  </div>\n</div>",
+                          "alternative_names": {},
+                          "maxHeight": 180
+                        },
+                        "legend": {
+                          "type": "none",
+                          "show_title": false,
+                          "title": "",
+                          "template": "",
+                          "visible": true
+                        },
+                        "order": 1,
+                        "visible": true,
+                        "options": {
+                          "sql": "select * from districtes_barcelona",
+                          "layer_name": "districtes_barcelona",
+                          "cartocss": "/** simple visualization */\n\n#districtes_barcelona{\n  polygon-fill: #FF6600;\n  polygon-opacity: 0.7;\n  line-color: #FFF;\n  line-width: 0.5;\n  line-opacity: 1;\n}",
+                          "cartocss_version": "2.1.1",
+                          "interactivity": "cartodb_id,area,c_distri,coord_x,coord_y,dones,homes,n_distri,perim,web_1,web_2,web_3",
+                          "table_name": "\"\"."
+                        }
+                      },
+                      {
+                        "id": "18cae5ef-dc32-4e27-b587-9098b057e12e",
+                        "type": "CartoDB",
+                        "infowindow": {
+                          "fields": [],
+                          "template_name": "table/views/infowindow_light",
+                          "template": "<div class=\"cartodb-popup v2\">\n  <a href=\"#close\" class=\"cartodb-popup-close-button close\">x</a>\n  <div class=\"cartodb-popup-content-wrapper\">\n    <div class=\"cartodb-popup-content\">\n      {{#content.fields}}\n        {{#title}}<h4>{{title}}</h4>{{/title}}\n        {{#value}}\n          <p {{#type}}class=\"{{ type }}\"{{/type}}>{{{ value }}}</p>\n        {{/value}}\n        {{^value}}\n          <p class=\"empty\">null</p>\n        {{/value}}\n      {{/content.fields}}\n    </div>\n  </div>\n  <div class=\"cartodb-popup-tip-container\"></div>\n</div>\n",
+                          "alternative_names": {},
+                          "width": 226,
+                          "maxHeight": 180
+                        },
+                        "tooltip": {
+                          "fields": [],
+                          "template_name": "tooltip_light",
+                          "template": "<div class=\"cartodb-tooltip-content-wrapper\">\n  <div class=\"cartodb-tooltip-content\">\n  {{#fields}}\n    {{#title}}\n    <h4>{{title}}</h4>\n    {{/title}}\n    <p>{{{ value }}}</p>\n  {{/fields}}\n  </div>\n</div>",
+                          "alternative_names": {},
+                          "maxHeight": 180
+                        },
+                        "legend": {
+                          "type": "none",
+                          "show_title": false,
+                          "title": "",
+                          "template": "",
+                          "visible": true
+                        },
+                        "order": 2,
+                        "visible": true,
+                        "options": {
+                          "sql": "select * from arboles",
+                          "layer_name": "arboles",
+                          "cartocss": "/** simple visualization */\n\n#arboles{\n  marker-fill-opacity: 0.9;\n  marker-line-color: #FFF;\n  marker-line-width: 1;\n  marker-line-opacity: 1;\n  marker-placement: point;\n  marker-type: ellipse;\n  marker-width: 10;\n  marker-fill: #229A00;\n  marker-allow-overlap: true;\n}",
+                          "cartocss_version": "2.1.1",
+                          "interactivity": "cartodb_id",
+                          "table_name": "\"\"."
+                        }
+                      }
+                    ]
+                  },
+                  "attribution": ""
+                }
+              },
+              {
+                "options": {
+                  "default": "true",
+                  "url": "http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+                  "subdomains": "abcd",
+                  "minZoom": "0",
+                  "maxZoom": "18",
+                  "attribution": "&copy; <a href=\"http://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors &copy; <a href= \"http://cartodb.com/attributions\">CartoDB</a>",
+                  "urlTemplate": "http://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}.png",
+                  "type": "Tiled",
+                  "name": "Positron Labels"
+                },
+                "infowindow": null,
+                "tooltip": null,
+                "id": "bc054932-1ae8-4d4a-96d6-d49ce4247a59",
+                "order": 2,
+                "type": "tiled"
+              }
+            ],
+            "overlays": [
+              {
+                "type": "share",
+                "order": 2,
+                "options": {
+                  "display": true,
+                  "x": 20,
+                  "y": 20
+                },
+                "template": ""
+              },
+              {
+                "type": "search",
+                "order": 3,
+                "options": {
+                  "display": true,
+                  "x": 60,
+                  "y": 20
+                },
+                "template": ""
+              },
+              {
+                "type": "zoom",
+                "order": 6,
+                "options": {
+                  "display": true,
+                  "x": 20,
+                  "y": 20
+                },
+                "template": "<a href=\"#zoom_in\" class=\"zoom_in\">+</a> <a href=\"#zoom_out\" class=\"zoom_out\">-</a>"
+              },
+              {
+                "type": "loader",
+                "order": 8,
+                "options": {
+                  "display": true,
+                  "x": 20,
+                  "y": 150
+                },
+                "template": "<div class=\"loader\" original-title=\"\"></div>"
+              },
+              {
+                "type": "logo",
+                "order": 9,
+                "options": {
+                  "display": true,
+                  "x": 10,
+                  "y": 40
+                },
+                "template": ""
+              },
+              {
+                "type": "layer_selector",
+                "order": 4,
+                "options": {
+                  "x": 220,
+                  "y": 20,
+                  "display": true
+                },
+                "template": null
+              }
+            ],
+            "prev": null,
+            "next": null,
+            "transition_options": {
+              "time": 0
+            },
+            "datasources": [
+              {
+                "id": "datasource1",
+                "type": "publicmap",
+                "user_name": "pablo",
+                "maps_api_template": "https://{user}.cartodb-staging.com:443",
+                "stat_tag": "ece6faac-7271-11e5-a85f-04013fc66a01",
+              }
+            ],
+            "widgets": [
+              {
+                "type": "list",
+                "options": {
+                  "id": 'widget_uuid',
+                  "sql": "SELECT COUNT(a.cartodb_id) as trees, b.n_distri as district FROM arboles as a INNER JOIN districtes_barcelona as b ON ST_Intersects(a.the_geom, b.the_geom) GROUP BY b.n_distri",
+                  "datasource": "datasource1",
+                  "title": "Árboles por distrito",
+                  "columns": [
+                    "trees",
+                    "district"
+                  ],
+                  "listTemplate": $("#list_template").html(),
+                  "listItemTemplate": $("#list_item_template").html(),
+                }
+              }
+            ]
+          }
+
+          cartodb.createVis('map', vizJSON, {
+            no_cdn: false
+          })
+          .done(function(vis, layers) {
+
+            window.layer = layers[1];
+            // var stadiums = layers[2];
+            // var counties = layers[1];
+
+            // var widget = vis.addWidget('list', {
+            //   layer: stadiums,
+            //   title: 'List',
+            //   listTemplate: $("#list_template").html(),
+            //   listItemTemplate: $("#list_item_template").html(),
+            //   columns: ['cartodb_id', 'description'],
+            //   sync: true
+            // });
+
+            // $('body').append(widget.render().el);
+          })
+          .error(function(err) {
+            console.log(err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
