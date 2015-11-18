@@ -63,6 +63,7 @@ module.exports = WidgetContentView.extend({
 
   _createHistogramView: function() {
     this.histogramChartView = new HistogramChartView({
+      type: 'time',
       y: 0,
       margin: {
         top: 4,
@@ -73,10 +74,7 @@ module.exports = WidgetContentView.extend({
       handles: true,
       width: this._histogramChartWidth(),
       height: this.viewModel.get('histogramChartHeight'),
-      data: this.model.getData(),
-      xAxisTickFormat: function(d, i) {
-        return i;
-      }
+      data: this.model.getData()
     });
     this._appendView(this.histogramChartView);
     this.histogramChartView.bind('on_brush_end', this._onBrushEnd, this);
