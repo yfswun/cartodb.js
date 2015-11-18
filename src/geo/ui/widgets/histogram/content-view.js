@@ -136,9 +136,9 @@ module.exports = WidgetContent.extend({
       handles: true,
       width: this.canvasWidth,
       height: this.canvasHeight,
-      data: this.dataModel.getData(),
-      xAxisTickFormat: this._xAxisTickFormat.bind(this)
+      data: this.dataModel.getData()
     }));
+
     this.$('.js-content').append(this.chart.el);
     this.addView(this.chart);
 

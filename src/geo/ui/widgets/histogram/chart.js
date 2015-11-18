@@ -18,9 +18,8 @@ module.exports = View.extend({
   initialize: function(opts) {
     if (!opts.width) throw new Error('opts.width is required');
     if (!opts.height) throw new Error('opts.height is required');
-    if (!_.isFunction(opts.xAxisTickFormat)) throw new Error('opts.xAxisTickFormat is required')
 
-    _.bindAll(this, '_selectBars', '_adjustBrushHandles', '_onBrushMove', '_onBrushStart', '_onMouseMove', '_onMouseOut');
+    _.bindAll(this, '_selectBars', '_adjustBrushHandles', '_onBrushMove', '_onBrushStart', '_onMouseMove', '_onMouseOut', '_xAxisTickFormat');
 
     // TODO resolve this; the histogram has two views that relies on this._canvas, one for a mini "zoom" view and one
     // for the normal view
@@ -593,9 +592,8 @@ module.exports = View.extend({
     this.chart.select('.Axis').remove();
   },
 
-  _generateXAxis: function() {
+ _generateXAxis: function() {
     var self = this;
-    var data = this.model.get('data');
 
     var lines = this.chart.append('g')
     .attr('class', 'Axis');
@@ -612,9 +610,26 @@ module.exports = View.extend({
       else if (i === self.verticalRange.length - 1) return 'end';
       else return 'middle';
     })
-    .text(function(d) {
-      return self.formatNumber(self.xAxisScale(d));
-    });
+    .text(this._xAxisTickFormat);
+  },
+
+  _xAxisTickFormat: function(d, i) {
+
+    if (this.options.type === 'time') {
+
+      var timestamp = this.xAxisScale(d);
+      var date = new Date(timestamp * 1000);
+
+      if (i === 0 || i === this.verticalRange.length - 1) { // start && end
+        format = d3.time.format("%d/%b");
+      } else { // middle
+        format = d3.time.format("%H:%M");
+      }
+
+      return format(date);
+    }
+
+    return this.formatNumber(this.xAxisScale(d));
   },
 
   resetBrush: function() {
