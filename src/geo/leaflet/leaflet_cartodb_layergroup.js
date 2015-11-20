@@ -17,7 +17,7 @@ L.CartoDBGroupLayerBase = L.TileLayer.extend({
 
   options: {
     opacity:        0.99,
-    attribution:    "CartoDB",
+    attribution:    cdb.config.get('cartodb_attributions'),
     debug:          false,
     visible:        true,
     added:          false,
@@ -236,6 +236,7 @@ L.CartoDBGroupLayerBase = L.TileLayer.extend({
 
       case 'click':
       case 'touchend':
+      case 'touchmove': // for some reason android browser does not send touchend
       case 'mspointerup':
       case 'pointerup':
       case 'pointermove':
@@ -263,8 +264,9 @@ L.CartoDBGroupLayerBase = L.TileLayer.extend({
    * @params {Object} Map object
    * @params {Object} Wax event object
    */
-  _findPos: function (map,o) {
-    var curleft = 0, curtop = 0;
+  _findPos: function (map, o) {
+    var curleft = 0;
+    var curtop = 0;
     var obj = map.getContainer();
 
     var x, y;
@@ -276,28 +278,42 @@ L.CartoDBGroupLayerBase = L.TileLayer.extend({
       y = o.e.clientY;
     }
 
-    if (obj.offsetParent) {
-      // Modern browsers
+    // If the map is fixed at the top of the window, we can't use offsetParent
+    // cause there might be some scrolling that we need to take into account.
+    if (obj.offsetParent && obj.offsetTop > 0) {
       do {
         curleft += obj.offsetLeft;
         curtop += obj.offsetTop;
       } while (obj = obj.offsetParent);
-      return map.containerPointToLayerPoint(new L.Point(x - curleft, y - curtop));
+      var point = this._newPoint(
+        x - curleft, y - curtop);
     } else {
       var rect = obj.getBoundingClientRect();
-      var p = new L.Point(
-            o.e.clientX - rect.left - obj.clientLeft - window.scrollX,
-            o.e.clientY - rect.top - obj.clientTop - window.scrollY);
-      return map.containerPointToLayerPoint(p);
+      var scrollX = (window.scrollX || window.pageXOffset);
+      var scrollY = (window.scrollY || window.pageYOffset);
+      var point = this._newPoint(
+        (o.e.clientX? o.e.clientX: x) - rect.left - obj.clientLeft - scrollX,
+        (o.e.clientY? o.e.clientY: y) - rect.top - obj.clientTop - scrollY);
     }
-  }
+    return map.containerPointToLayerPoint(point);
+  },
 
+  /**
+   * Creates an instance of a Leaflet Point
+   */
+  _newPoint: function(x, y) {
+    return new L.Point(x, y);
+  }
 });
 
 L.CartoDBGroupLayer = L.CartoDBGroupLayerBase.extend({
   includes: [
     LayerDefinition.prototype,
-  ]
+  ],
+
+  _modelUpdated: function() {
+    this.setLayerDefinition(this.model.get('layer_definition'));
+  }
 });
 
 function layerView(base) {
@@ -311,10 +327,6 @@ function layerView(base) {
     initialize: function(layerModel, leafletMap) {
       var self = this;
       var hovers = [];
-
-      // CartoDB new attribution,
-      // also we have the logo
-      layerModel.attributes.attribution = cdb.config.get('cartodb_attributions');
 
       var opts = _.clone(layerModel.attributes);
 
@@ -364,6 +376,7 @@ function layerView(base) {
         _featureClick  && _featureClick.apply(self, arguments);
         self.featureClick  && self.featureClick.apply(self, arguments);
       }, 10);
+
 
       base.prototype.initialize.call(this, opts);
       cdb.geo.LeafLetLayerView.call(this, layerModel, this, leafletMap);
@@ -419,10 +432,6 @@ L.NamedMap = L.CartoDBGroupLayerBase.extend({
         throw new Error('cartodb-leaflet needs at least the named_map');
     }
 
-    /*if(!options.layer_definition) {
-      this.options.layer_definition = LayerDefinition.layerDefFromSubLayers(options.sublayers);
-    }*/
-
     NamedMap.call(this, this.options.named_map, this.options);
 
     this.fire = this.trigger;
@@ -431,6 +440,10 @@ L.NamedMap = L.CartoDBGroupLayerBase.extend({
     L.TileLayer.prototype.initialize.call(this);
     this.interaction = [];
     this.addProfiling();
+  },
+
+  _modelUpdated: function() {
+    this.setLayerDefinition(this.model.get('named_map'));
   }
 });
 

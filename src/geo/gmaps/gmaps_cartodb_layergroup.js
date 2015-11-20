@@ -26,7 +26,7 @@ Projector.prototype.pixelToLatLng = function(point) {
 
 var default_options = {
   opacity:        0.99,
-  attribution:    "CartoDB",
+  attribution:    cdb.config.get('cartodb_attributions'),
   debug:          false,
   visible:        true,
   added:          false,
@@ -176,7 +176,6 @@ CartoDBLayerGroupBase.prototype.getTile = function(coord, zoom, ownerDocument) {
     finished();
   }
 
-
   return im;
 };
 
@@ -208,7 +207,6 @@ CartoDBLayerGroupBase.prototype.update = function (done) {
   });
 };
 
-
 CartoDBLayerGroupBase.prototype.refreshView = function() {
   var self = this;
   var map = this.options.map;
@@ -232,8 +230,8 @@ CartoDBLayerGroupBase.prototype._checkLayer = function() {
 }
 
 CartoDBLayerGroupBase.prototype._findPos = function (map,o) {
-  var curleft, cartop;
-  curleft = curtop = 0;
+  var curleft = 0;
+  var curtop = 0;
   var obj = map.getDiv();
 
   var x, y;
@@ -245,14 +243,31 @@ CartoDBLayerGroupBase.prototype._findPos = function (map,o) {
     y = o.e.clientY;
   }
 
-  do {
-    curleft += obj.offsetLeft;
-    curtop += obj.offsetTop;
-  } while (obj = obj.offsetParent);
-  return new google.maps.Point(
-      x - curleft,
-      y - curtop
-  );
+  // If the map is fixed at the top of the window, we can't use offsetParent
+  // cause there might be some scrolling that we need to take into account.
+  if (obj.offsetParent && obj.offsetTop > 0) {
+    do {
+      curleft += obj.offsetLeft;
+      curtop += obj.offsetTop;
+    } while (obj = obj.offsetParent);
+    var point = this._newPoint(
+      x - curleft, y - curtop);
+  } else {
+    var rect = obj.getBoundingClientRect();
+    var scrollX = (window.scrollX || window.pageXOffset);
+    var scrollY = (window.scrollY || window.pageYOffset);
+    var point = this._newPoint(
+      (o.e.clientX? o.e.clientX: x) - rect.left - obj.clientLeft - scrollX,
+      (o.e.clientY? o.e.clientY: y) - rect.top - obj.clientTop - scrollY);
+  }
+  return point;
+};
+
+/**
+ * Creates an instance of a google.maps Point
+ */
+CartoDBLayerGroupBase.prototype._newPoint = function(x, y) {
+  return new google.maps.Point(x, y);
 };
 
 CartoDBLayerGroupBase.prototype._manageOffEvents = function(map, o){
@@ -277,7 +292,10 @@ CartoDBLayerGroupBase.prototype._manageOnEvents = function(map,o) {
 
     case 'click':
     case 'touchend':
+    case 'touchmove': // for some reason android browser does not send touchend
     case 'mspointerup':
+    case 'pointerup':
+    case 'pointermove':
       if (this.options.featureClick) {
         this.options.featureClick(o.e,latlng, point, o.data, o.layer);
       }
@@ -316,10 +334,6 @@ function LayerGroupView(base) {
     var hovers = [];
 
     _.bindAll(this, 'featureOut', 'featureOver', 'featureClick');
-
-    // CartoDB new attribution,z
-    // also we have the logo
-    layerModel.attributes.attribution = cdb.config.get('cartodb_attributions');
 
     var opts = _.clone(layerModel.attributes);
 
@@ -375,8 +389,6 @@ function LayerGroupView(base) {
     base.call(this, opts);
     cdb.geo.GMapsLayerView.call(this, layerModel, this, gmapsMap);
   };
-
-
 
   _.extend(
     GMapsCartoDBLayerGroupView.prototype,

@@ -1,7 +1,6 @@
 
 describe("Overlay", function() {
 
-
   it("should register and create a type", function() {
     var _data;
     cdb.vis.Overlay.register('test', function(data) {
@@ -37,7 +36,6 @@ describe("Vis", function() {
 
     this.vis = new cdb.vis.Vis({el: this.container});
     this.vis.load(this.mapConfig);
-
   })
 
   it("should insert  default max and minZoom values when not provided", function() {
@@ -90,7 +88,7 @@ describe("Vis", function() {
     expect(this.mapConfig.center[0]).not.toEqual(43.3);
     expect(this.mapConfig.center[1]).not.toEqual("ham");
   })
-  
+
   it("should parse bounds values if they are correct", function() {
     this.container = $('<div>').css('height', '200px');
     var opts = {
@@ -255,6 +253,50 @@ describe("Vis", function() {
     expect(this.vis.$('.cartodb-header h1 > a').length).toEqual(0);
   });
 
+  it("should add zoom", function() {
+    this.mapConfig.overlays = [{ type: 'zoom', order: 7, options: { x: 20, y: 20 }, template: 'test' }];
+    this.vis.load(this.mapConfig);
+    expect(this.vis.$('.cartodb-zoom').length).toEqual(1);
+  });
+
+  it("should enable zoom if it's specified by zoomControl option", function() {
+    this.mapConfig.overlays = [{ type: 'zoom', order: 7, options: { x: 20, y: 20 }, template: 'test' }];
+    this.vis.load(this.mapConfig, {
+      zoomControl: true
+    });
+    expect(this.vis.$('.cartodb-zoom').length).toEqual(1);
+  });
+
+  it("should disable zoom if it's specified by zoomControl option", function() {
+    this.mapConfig.overlays = [{ type: 'zoom', order: 7, options: { x: 20, y: 20 }, template: 'test' }];
+    this.vis.load(this.mapConfig, {
+      zoomControl: false
+    });
+    expect(this.vis.$('.cartodb-zoom').length).toEqual(0);
+  });
+
+  it("should add search", function() {
+    this.mapConfig.overlays = [{ type: 'search' }];
+    this.vis.load(this.mapConfig);
+    expect(this.vis.$('.cartodb-searchbox').length).toEqual(1);
+  });
+
+  it("should enable search if it's specified by searchControl", function() {
+    this.mapConfig.overlays = [{ type: 'search' }];
+    this.vis.load(this.mapConfig, {
+      searchControl: true
+    });
+    expect(this.vis.$('.cartodb-searchbox').length).toEqual(1);
+  });
+
+  it("should disable search if it's specified by searchControl", function() {
+    this.mapConfig.overlays = [{ type: 'search' }];
+    this.vis.load(this.mapConfig, {
+      searchControl: false
+    });
+    expect(this.vis.$('.cartodb-searchbox').length).toEqual(0);
+  });
+
   it("should use zoom", function() {
     this.vis.load(this.mapConfig, {
       zoom: 10,
@@ -298,29 +340,76 @@ describe("Vis", function() {
     expect(this.vis.getOverlaysByType("tooltip").length).toEqual(0);
   });
 
-  it("should add an overlay", function() {
-    var v = this.vis.addOverlay({
-      type: 'tooltip',
-      template: 'test',
-      layer: new L.CartoDBGroupLayer({
-        layer_definition: {version: '1.0.0', layers: [] }
-      })
+  describe('addOverlay', function() {
+
+    it("should throw an error if no layers are available", function() {
+      expect(function() {
+        this.vis.addOverlay({
+          type: 'tooltip',
+          template: 'test'
+        })
+      }.bind(this)).toThrow(new Error("layer is null"));
     });
-    expect(this.vis.getOverlay('tooltip')).toEqual(v);
-    expect(this.vis.getOverlays().length).toEqual(1);
-    v.clean();
-    expect(this.vis.getOverlays().length).toEqual(0);
+
+    it("should add an overlay to the specified layer and enable interaction", function() {
+      var layer = new L.CartoDBGroupLayer({
+        layer_definition: {version: '1.0.0', layers: [] }
+      });
+
+      var tooltip = this.vis.addOverlay({
+        type: 'tooltip',
+        template: 'test',
+        layer: layer
+      });
+
+      expect(tooltip.options.layer).toEqual(layer);
+      expect(layer.interactionEnabled).toEqual([true]);
+    });
+
+    it("should add an overlay to the first layer and enable interaction", function(done) {
+      var layer;
+      var vizjson = {
+        layers: [
+          {
+            type: 'tiled',
+            options: {
+              urlTemplate: ''
+            }
+          },
+          {
+            type: 'layergroup',
+            options: {
+              layer_definition: {
+                layers: []
+              }
+            }
+          }
+        ]
+      };
+      cartodb.createVis('map', vizjson, {})
+        .done(function(vis, layers) {
+          var tooltip = vis.addOverlay({
+            type: 'tooltip',
+            template: 'test'
+          });
+          var layer = vis.getLayers()[1];
+
+          expect(tooltip.options.layer).toEqual(layer);
+          expect(layer.interactionEnabled).toEqual([true]);
+
+          done();
+        });
+    });
+
   });
 
   it ("should load modules", function(done) {
-    // var self = this;
-    console.log(this.vis);
     this.mapConfig.layers = [
       {kind: 'torque', options: { tile_style: 'test', user_name: 'test', table_name: 'test'}}
     ];
 
     this.vis.load(this.mapConfig);
-    
+
     setTimeout(function() {
       var scripts = document.getElementsByTagName('script'),
           torqueRe = /\/cartodb\.mod\.torque\.js/;
@@ -348,9 +437,209 @@ describe("Vis", function() {
     };
 
     layers = null;
-    
+
     this.vis.load(this.mapConfig, opts);
     expect(this.vis.map.layers.at(0).get('type')).toEqual('GMapsBase');
   });
 
+  describe("dragging option", function() {
+
+    it("should be enabled with zoom overlay and scrollwheel enabled", function() {
+      var container = $('<div>').css('height', '200px');
+      var vis = new cdb.vis.Vis({el: container});
+
+      var mapConfig = {
+        updated_at: 'cachebuster',
+        title: "irrelevant",
+        url: "http://cartodb.com",
+        center: [40.044, -101.95],
+        bounding_box_sw: [20, -140],
+        bounding_box_ne: [ 55, -50],
+        zoom: 4,
+        bounds: [[1, 2],[3, 4]],
+        scrollwheel: true,
+        overlays: [
+          {
+            type: "zoom",
+            order: 6,
+            options: {
+              x: 20,
+              y: 20,
+              display: true
+            },
+            template: ""
+          }
+        ],
+      };
+
+      vis.load(mapConfig);
+      expect(vis.map.get('drag')).toBeTruthy();
+    });
+
+    it("should be enabled with zoom overlay and scrollwheel disabled", function() {
+      var container = $('<div>').css('height', '200px');
+      var vis = new cdb.vis.Vis({el: container});
+
+      var mapConfig = {
+        updated_at: 'cachebuster',
+        title: "irrelevant",
+        url: "http://cartodb.com",
+        center: [40.044, -101.95],
+        bounding_box_sw: [20, -140],
+        bounding_box_ne: [ 55, -50],
+        zoom: 4,
+        bounds: [[1, 2],[3, 4]],
+        scrollwheel: false,
+        overlays: [
+          {
+            type: "zoom",
+            order: 6,
+            options: {
+              x: 20,
+              y: 20,
+              display: true
+            },
+            template: ""
+          }
+        ],
+      };
+
+      vis.load(mapConfig);
+      expect(vis.map.get('drag')).toBeTruthy();
+    });
+
+    it("should be enabled without zoom overlay and scrollwheel enabled", function() {
+      var container = $('<div>').css('height', '200px');
+      var vis = new cdb.vis.Vis({el: container});
+
+      var mapConfig = {
+        updated_at: 'cachebuster',
+        title: "irrelevant",
+        url: "http://cartodb.com",
+        center: [40.044, -101.95],
+        bounding_box_sw: [20, -140],
+        bounding_box_ne: [ 55, -50],
+        zoom: 4,
+        bounds: [[1, 2],[3, 4]],
+        scrollwheel: true,
+        overlays: [],
+      };
+
+      vis.load(mapConfig);
+      expect(vis.map.get('drag')).toBeTruthy();
+    });
+
+    it("should be disabled without zoom overlay and scrollwheel disabled", function() {
+      var container = $('<div>').css('height', '200px');
+      var vis = new cdb.vis.Vis({el: container});
+
+      var mapConfig = {
+        updated_at: 'cachebuster',
+        title: "irrelevant",
+        url: "http://cartodb.com",
+        center: [40.044, -101.95],
+        bounding_box_sw: [20, -140],
+        bounding_box_ne: [ 55, -50],
+        zoom: 4,
+        bounds: [[1, 2],[3, 4]],
+        scrollwheel: false,
+        overlays: [],
+      };
+
+      vis.load(mapConfig);
+      expect(vis.map.get('drag')).toBeFalsy();
+    });
+
+  });
+
+  describe("Legends", function() {
+
+    it('should only display legends for visible layers', function() {
+      this.mapConfig.layers = [
+        {
+          kind: 'tiled',
+          legend: {
+            type: "custom",
+            show_title: false,
+            title: "",
+            template: "",
+            items: [
+              {
+                name: "visible legend item",
+                visible: true,
+                value: "#cccccc",
+                sync: true
+              }
+            ]
+          },
+          options: {
+            urlTemplate: 'https://dnv9my2eseobd.cloudfront.net/v3/{z}/{x}/{y}.png'
+          }
+        },
+        {
+          visible: false,
+          kind: 'tiled',
+          legend: {
+            type: "custom",
+            show_title: false,
+            title: "",
+            template: "",
+            items: [
+              {
+                name: "invisible legend item",
+                visible: true,
+                value: "#cccccc",
+                sync: true
+              }
+            ]
+          },
+          options: {
+            urlTemplate: 'https://dnv9my2eseobd.cloudfront.net/v3/{z}/{x}/{y}.png'
+          }
+        }
+      ]
+      this.vis.load(this.mapConfig);
+
+      expect(this.vis.legends.$('.cartodb-legend').length).toEqual(1);
+      expect(this.vis.legends.$el.html()).toContain('visible legend item');
+      expect(this.vis.legends.$el.html()).not.toContain('invisible legend item');
+    })
+  })
+
+  describe("Torque time slider", function() {
+
+    beforeEach(function() {
+      // Load torque module
+      cartodb.torque = torque;
+    })
+
+    it ("should display the time slider if a torque layer is present", function(done) {
+      this.mapConfig.layers = [
+        {
+          kind: 'torque',
+          options: { user_name: 'test', table_name: 'test', tile_style: 'Map { -torque-frame-count: 10;} #test { marker-width: 10; }'}
+        }
+      ];
+
+      this.vis.load(this.mapConfig).done(function(vis, layers){
+        expect(vis.timeSlider).toBeDefined();
+        done();
+      });
+    });
+
+    it ("should NOT display the time slider if a torque layer is not visible", function(done) {
+      this.mapConfig.layers = [
+        {
+          kind: 'torque',
+          visible: false,
+          options: { user_name: 'test', table_name: 'test', tile_style: 'Map { -torque-frame-count: 10;} #test { marker-width: 10; }'}
+        }
+      ];
+
+      this.vis.load(this.mapConfig).done(function(vis, layers){
+        expect(vis.timeSlider).toBeUndefined();
+        done();
+      });
+    });
+  })
 });

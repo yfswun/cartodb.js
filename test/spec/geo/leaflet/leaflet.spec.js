@@ -8,7 +8,6 @@ describe('LeafletMapView', function() {
         'height': '200px',
         'width': '200px'
     });
-    //$('body').append(container);
     map = new cdb.geo.Map();
     mapView = new cdb.geo.LeafletMapView({
       el: container,
@@ -20,14 +19,17 @@ describe('LeafletMapView', function() {
 
     spy = {
       zoomChanged: function(){},
+      keyboardChanged: function(){},
       centerChanged: function(){},
       changed: function() {}
     };
 
     spyOn(spy, 'zoomChanged');
+    spyOn(spy, 'keyboardChanged');
     spyOn(spy, 'centerChanged');
     spyOn(spy, 'changed');
     map.bind('change:zoom', spy.zoomChanged);
+    map.bind('change:keyboard', spy.keyboardChanged);
     map.bind('change:center', spy.centerChanged);
     map.bind('change', spy.changed);
   });
@@ -137,7 +139,7 @@ describe('LeafletMapView', function() {
   });
 
   it("should create the cartodb logo", function(done) {
-    layer = new cdb.geo.CartoDBLayer({ 
+    layer = new cdb.geo.CartoDBLayer({
       table_name: "INVENTADO",
       user_name: 'test',
       tile_style: 'test'
@@ -152,7 +154,7 @@ describe('LeafletMapView', function() {
   });
 
   it("should not add the cartodb logo when cartodb_logo = false", function(done) {
-    layer = new cdb.geo.CartoDBLayer({ 
+    layer = new cdb.geo.CartoDBLayer({
       table_name: "INVENTADO",
       user_name: 'test',
       tile_style: 'test',
@@ -183,10 +185,11 @@ describe('LeafletMapView', function() {
     map.addLayer(layer);
 
     spyOn(mapView.map_leaflet,'addLayer');
-    var b = new cdb.geo.TileLayer({urlTemplate: 'test'});
+    var b = new cdb.geo.TileLayer({urlTemplate: 'test' });
     map.addLayer(b, {at: 0});
 
-    expect(mapView.map_leaflet.addLayer.calls.mostRecent().args[0].model).toEqual(layer);
+    expect(mapView.getLayerByCid(layer.cid).options.zIndex).toEqual(1);
+    expect(mapView.getLayerByCid(b.cid).options.zIndex).toEqual(0);
     //expect(mapView.map_leaflet.addLayer).toHaveBeenCalledWith(mapView.layers[layer.cid].leafletLayer, true);
   });
 
@@ -273,6 +276,19 @@ describe('LeafletMapView', function() {
     map.addLayer(layer);
     layer.set('type', 'torque');
     expect(mapView.layers[layer.cid] instanceof L.TorqueLayer).toEqual(true);
+  });
+
+  it("should reuse layer view", function() {
+    var layer1 = new cdb.geo.TorqueLayer({ type: 'torque', sql: 'select * from table', cartocss: '#test {}' });
+    map.addLayer(layer1);
+    expect(mapView.layers[layer1.cid] instanceof L.TorqueLayer).toEqual(true);
+    mapView.layers[layer1.cid].check = 'testing';
+    var newLayer = layer1.clone();
+    newLayer.set({ sql: 'select * from table', cartocss: '#test {}' });
+    map.layers.reset([newLayer]);
+    expect(mapView.layers[newLayer.cid] instanceof L.TorqueLayer).toEqual(true);
+    expect(mapView.layers[newLayer.cid].model).toEqual(newLayer)
+    expect(mapView.layers[newLayer.cid].check).toEqual('testing');
   });
 
   // Test cases for gmaps substitutes since the support is deprecated.
@@ -391,8 +407,110 @@ describe('LeafletMapView', function() {
       it("shouldn't use osgeo's TMS setting", function() {
         expect(view.options.tms).toEqual(false);
       });
+
+      xit("should change keyboard", function() {
+        mapView._setKeyboard(null, false);
+        expect(spy.keyboardChanged).toHaveBeenCalled();
+      });
+
     });
   });
 
-});
+  describe('attributions', function() {
 
+    var container;
+
+    beforeEach(function() {
+      container = $('<div>').css({
+        'height': '200px',
+        'width': '200px'
+      });
+    });
+
+    it('should render the right attributions', function() {
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual('CartoDB attribution');
+
+      layer = new cdb.geo.CartoDBLayer({
+        attribution: 'custom attribution'
+      });
+      map.addLayer(layer);
+
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual('custom attribution, CartoDB attribution');
+    });
+
+    it('should respect the attribution of existing Leaflet layers', function() {
+      var leafletMap = new L.Map(container[0], {
+        center: [43, 0],
+        zoom: 3
+      });
+
+      // Add a tile layer with some attribution
+      L.tileLayer('http://tile.stamen.com/toner/{z}/{x}/{y}.png', {
+        attribution: 'Stamen'
+      }).addTo(leafletMap);
+
+      mapView = new cdb.geo.LeafletMapView({
+        el: container,
+        map: map,
+        map_object: leafletMap
+      });
+
+      // Add a CartoDB layer with some custom attribution
+      layer = new cdb.geo.CartoDBLayer({
+        attribution: 'custom attribution'
+      });
+      map.addLayer(layer);
+
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual('Leaflet | Stamen, custom attribution, CartoDB attribution');
+    });
+
+    it('should render attributions when the Leaflet map has attributionControl disabled', function() {
+      var leafletMap = new L.Map(container[0], {
+        center: [43, 0],
+        zoom: 3,
+        attributionControl: false
+      });
+
+      // Add a tile layer with some attribution
+      L.tileLayer('http://tile.stamen.com/toner/{z}/{x}/{y}.png', {
+        attribution: 'Stamen'
+      }).addTo(leafletMap);
+
+      mapView = new cdb.geo.LeafletMapView({
+        el: container,
+        map: map,
+        map_object: leafletMap
+      });
+
+      // Add a CartoDB layer with some custom attribution
+      layer = new cdb.geo.CartoDBLayer({
+        attribution: 'custom attribution'
+      });
+      map.addLayer(layer);
+
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual('Stamen, custom attribution, CartoDB attribution');
+    });
+  });
+
+  it("should disable leaflet dragging and double click zooming when the map has drag disabled", function() {
+    var container = $('<div>').css({
+        'height': '200px',
+        'width': '200px'
+    });
+    var map = new cdb.geo.Map({
+      drag: false
+    });
+    var mapView = new cdb.geo.LeafletMapView({
+      el: container,
+      map: map
+    });
+
+    expect(mapView.map_leaflet.dragging.enabled()).toBeFalsy();
+    expect(mapView.map_leaflet.doubleClickZoom.enabled()).toBeFalsy();
+  });
+
+});

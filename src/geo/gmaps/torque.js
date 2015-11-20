@@ -7,7 +7,6 @@ if(typeof(google) == "undefined" || typeof(google.maps) == "undefined")
 var GMapsTorqueLayerView = function(layerModel, gmapsMap) {
 
   var extra = layerModel.get('extra_params');
-  layerModel.attributes.attribution = cdb.config.get('cartodb_attributions');
   cdb.geo.GMapsLayerView.call(this, layerModel, this, gmapsMap);
 
   var query = this._getQuery(layerModel);
@@ -25,6 +24,7 @@ var GMapsTorqueLayerView = function(layerModel, gmapsMap) {
       tiler_protocol: layerModel.get('tiler_protocol'),
       tiler_domain: layerModel.get('tiler_domain'),
       tiler_port: layerModel.get('tiler_port'),
+      maps_api_template: layerModel.get('maps_api_template'),
       stat_tag: layerModel.get('stat_tag'),
       animationDuration: layerModel.get('torque-duration'),
       steps: layerModel.get('torque-steps'),
@@ -36,11 +36,11 @@ var GMapsTorqueLayerView = function(layerModel, gmapsMap) {
       map: gmapsMap,
       cartodb_logo: layerModel.get('cartodb_logo'),
       attribution: layerModel.get('attribution'),
-      cdn_url: layerModel.get('no_cdn') ? null: (layerModel.get('cdn_url') || cdb.CDB_HOST),
       cartocss: layerModel.get('cartocss') || layerModel.get('tile_style'),
       named_map: layerModel.get('named_map'),
       auth_token: layerModel.get('auth_token'),
-      no_cdn: layerModel.get('no_cdn')
+      no_cdn: layerModel.get('no_cdn'),
+      loop: layerModel.get('loop') === false? false: true,
   });
 
   //this.setCartoCSS(this.model.get('tile_style'));

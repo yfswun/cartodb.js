@@ -11,7 +11,6 @@ var LeafLetTorqueLayer = L.TorqueLayer.extend({
 
   initialize: function(layerModel, leafletMap) {
     var extra = layerModel.get('extra_params');
-    layerModel.attributes.attribution = cdb.config.get('cartodb_attributions');
 
     var query = this._getQuery(layerModel);
 
@@ -30,6 +29,7 @@ var LeafLetTorqueLayer = L.TorqueLayer.extend({
       tiler_protocol: layerModel.get('tiler_protocol'),
       tiler_domain: layerModel.get('tiler_domain'),
       tiler_port: layerModel.get('tiler_port'),
+      maps_api_template: layerModel.get('maps_api_template'),
       stat_tag: layerModel.get('stat_tag'),
       animationDuration: layerModel.get('torque-duration'),
       steps: layerModel.get('torque-steps'),
@@ -40,16 +40,16 @@ var LeafLetTorqueLayer = L.TorqueLayer.extend({
       },
       cartodb_logo: layerModel.get('cartodb_logo'),
       attribution: layerModel.get('attribution'),
-      cdn_url: layerModel.get('no_cdn') ? null: (layerModel.get('cdn_url') || cdb.CDB_HOST),
       cartocss: layerModel.get('cartocss') || layerModel.get('tile_style'),
       named_map: layerModel.get('named_map'),
       auth_token: layerModel.get('auth_token'),
       no_cdn: layerModel.get('no_cdn'),
       dynamic_cdn: layerModel.get('dynamic_cdn'),
+      loop: layerModel.get('loop') === false? false: true,
       instanciateCallback: function() {
         var cartocss = layerModel.get('cartocss') || layerModel.get('tile_style');
 
-        return '_cdbct_' + cartodb.uniqueCallbackName(cartocss + query)
+        return '_cdbct_' + cdb.core.util.uniqueCallbackName(cartocss + query);
       }
     });
 
