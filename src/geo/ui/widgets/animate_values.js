@@ -29,11 +29,17 @@ module.exports = View.extend({
       return;
     }
 
-    $el.prop('counter', from).stop().animate({ counter: to }, {
-      duration: options.animationSpeed || 500,
-      easing: options.easingMethod || 'swing',
-      step: stepValue
-    });
+    stepValue(from);
+
+    var animate = _.debounce(function() {
+      $el.prop('counter', from).stop().animate({ counter: to }, {
+        duration: options.animationSpeed || 500,
+        easing: options.easingMethod || 'swing',
+        step: stepValue
+      });
+    }, 500);
+
+    animate();
   },
 
   animateFromCurrentValue: function(value, className, template, opts) {
@@ -58,11 +64,17 @@ module.exports = View.extend({
       return;
     }
 
-    $el.prop('counter', from).stop().animate({ counter: to }, {
-      duration: options.animationSpeed || 500,
-      easing: options.easingMethod || 'swing',
-      step: stepValue
-    });
+    stepValue(from);
+
+    var animate = _.debounce(function() {
+      $el.prop('counter', from).stop().animate({ counter: to }, {
+        duration: options.animationSpeed || 500,
+        easing: options.easingMethod || 'swing',
+        step: stepValue
+      });
+    }, 500);
+
+    animate();
   },
 
   animateValue: function(model, what, className, template, opts) {
@@ -87,10 +99,16 @@ module.exports = View.extend({
       return;
     }
 
-    $el.prop('counter', from).stop().animate({ counter: to }, {
-      duration: options.animationSpeed || 500,
-      easing: options.easingMethod || 'swing',
-      step: stepValue
-    });
+    stepValue(from);
+
+    var animate = _.debounce(function() {
+      $el.prop('counter', from).stop().animate({ counter: to }, {
+        duration: options.animationSpeed || 500,
+        easing: options.easingMethod || 'swing',
+        step: stepValue
+      });
+    }, 500);
+
+    animate();
   }
 });
