@@ -11,7 +11,7 @@ var Geometry = require('../../geo/geometry');
  */
 var Search = View.extend({
 
-  className: 'cartodb-searchbox',
+  className: 'cartodb-searchbox CDB-Search',
 
   _ZOOM_BY_CATEGORY: {
     'building': 18,
