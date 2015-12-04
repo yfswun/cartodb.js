@@ -29,6 +29,7 @@ var ListModel = require('cdb/geo/ui/widgets/list/model');
 var HistogramModel = require('cdb/geo/ui/widgets/histogram/model');
 var CategoryModel = require('cdb/geo/ui/widgets/category/model');
 var FormulaModel = require('cdb/geo/ui/widgets/formula/model');
+var MiniMapModel = require('cdb/geo/ui/widgets/minimap/model');
 var WindshaftConfig = require('cdb/windshaft/config');
 var WindshaftClient = require('cdb/windshaft/client');
 var WindshaftDashboard = require('cdb/windshaft/dashboard');
@@ -56,6 +57,9 @@ var Vis = View.extend({
       },
       formula: function(attrs, opts) {
         return new FormulaModel(attrs, opts);
+      },
+      minimap: function(attrs, opts) {
+        return new MiniMapModel(attrs, opts);
       },
       histogram: function(attrs, opts, layerIndex) {
         opts.filter = new RangeFilter({

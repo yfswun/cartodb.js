@@ -5,6 +5,7 @@ var View = require('cdb/core/view');
 var Model = require('cdb/core/model');
 var CategoryContentView = require('cdb/geo/ui/widgets/category/content_view');
 var FormulaContentView = require('cdb/geo/ui/widgets/formula/content_view');
+var MiniMapContentView = require('cdb/geo/ui/widgets/minimap/content_view');
 var HistogramContentView = require('cdb/geo/ui/widgets/histogram/content-view');
 var ListContentView = require('cdb/geo/ui/widgets/list/content_view');
 var WidgetViewFactory = require('cdb/geo/ui/widgets/widget-view-factory');
@@ -20,6 +21,13 @@ module.exports = View.extend({
         type: 'formula',
         createContentView: function(m) {
           return new FormulaContentView({
+            model: m
+          });
+        }
+      }, {
+        type: 'minimap',
+        createContentView: function(m) {
+          return new MiniMapContentView({
             model: m
           });
         }
