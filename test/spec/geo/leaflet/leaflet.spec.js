@@ -440,6 +440,19 @@ describe('LeafletMapView', function() {
       expect(attributions).toEqual('custom attribution, CartoDB attribution');
     });
 
+    it('should sanitize attributions', function() {
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual('CartoDB attribution');
+
+      layer = new cdb.geo.CartoDBLayer({
+        attribution: '<img src=x onerror=alert(/XSS/)>'
+      });
+      map.addLayer(layer);
+
+      var attributions = mapView.$el.find('.leaflet-control-attribution').text();
+      expect(attributions).toEqual(', CartoDB attribution');
+    });
+
     it('should respect the attribution of existing Leaflet layers', function() {
       var leafletMap = new L.Map(container[0], {
         center: [43, 0],
