@@ -88,7 +88,6 @@ var GoogleMapsMapView = MapView.extend({
 
     this._bindModel();
     this._addLayers();
-    this.setAttribution();
 
     google.maps.event.addListener(this.map_googlemaps, 'center_changed', function() {
       var c = self.map_googlemaps.getCenter();
@@ -251,26 +250,6 @@ var GoogleMapsMapView = MapView.extend({
       ];
     }
     return [ [0,0], [0,0] ];
-  },
-
-setAttribution: function() {
-  // Remove old one
-  var old = document.getElementById("cartodb-gmaps-attribution")
-    , attribution = this.map.get("attribution").join(", ");
-
-    // If div already exists, remove it
-    if (old) {
-      old.parentNode.removeChild(old);
-    }
-
-    // Add new one
-    var container           = this.map_googlemaps.getDiv()
-      , cartodb_attribution = document.createElement("div");
-
-    cartodb_attribution.setAttribute('id','cartodb-gmaps-attribution');
-    cartodb_attribution.setAttribute('class', 'gmaps');
-    container.appendChild(cartodb_attribution);
-    cartodb_attribution.innerHTML = attribution;
   },
 
   setCursor: function(cursor) {

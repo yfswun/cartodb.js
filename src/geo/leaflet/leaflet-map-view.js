@@ -39,8 +39,6 @@ var LeafletMapView = MapView.extend({
     if (!this.options.map_object) {
 
       this.map_leaflet = new L.Map(this.el, mapConfig);
-      // remove the "powered by leaflet"
-      this.map_leaflet.attributionControl.setPrefix('');
       if (this.map.get("scrollwheel") == false) this.map_leaflet.scrollWheelZoom.disable();
       if (this.map.get("keyboard") == false) this.map_leaflet.keyboard.disable();
       if (this.map.get("drag") == false) {
@@ -73,7 +71,6 @@ var LeafletMapView = MapView.extend({
 
     this._bindModel();
     this._addLayers();
-    this.setAttribution();
 
     this.map_leaflet.on('layeradd', function(lyr) {
       this.trigger('layeradd', lyr, self);
@@ -281,38 +278,6 @@ var LeafletMapView = MapView.extend({
       [sw.lat, sw.lng],
       [ne.lat, ne.lng]
     ];
-  },
-
-  setAttribution: function() {
-    var attributionControl = this._getAttributionControl();
-
-    // Save the attributions that were in the map the first time a new layer
-    // is added and the attributions of the map have changed
-    if (!this._originalAttributions) {
-      this._originalAttributions = Object.keys(attributionControl._attributions);
-    }
-
-    // Clear the attributions and re-add the original and custom attributions in
-    // the order we want
-    attributionControl._attributions = {};
-    var newAttributions = this._originalAttributions.concat(this.map.get('attribution'));
-    _.each(newAttributions, function(attribution) {
-      attributionControl.addAttribution(attribution);
-    });
-  },
-
-  _getAttributionControl: function() {
-    if (this._attributionControl) {
-      return this._attributionControl;
-    }
-
-    this._attributionControl = this.map_leaflet.attributionControl;
-    if (!this._attributionControl) {
-      this._attributionControl = L.control.attribution({ prefix: '' });
-      this.map_leaflet.addControl(this._attributionControl);
-    }
-
-    return this._attributionControl;
   },
 
   getSize: function() {
