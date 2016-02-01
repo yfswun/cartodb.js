@@ -5,8 +5,11 @@ var WindshaftLayerGroupConfig = require('./layergroup-config');
 var WindshaftNamedMapConfig = require('./namedmap-config');
 var WindshaftConfig = require('./config');
 var EMPTY_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+var Mustache = require('mustache');
+
 
 var WindshaftMap = Backbone.Model.extend({
+  createInstanceCount: 0,
 
   initialize: function (attrs, options) {
     this.client = options.client;
@@ -31,7 +34,53 @@ var WindshaftMap = Backbone.Model.extend({
     return this.configGenerator === WindshaftLayerGroupConfig;
   },
 
+  //hack!  Let this run twice and only twice.
   createInstance: function (options) {
+    this.createInstanceCount++;
+    console.log('createInstance', options, this.createInstanceCount);
+    if (this.createInstanceCount < 3) {
+      return this.actualCreateInstance(options);
+    } else {
+
+      options.dataviews.models.forEach(function (model) {
+        console.log('model',model);
+
+        if (model.filter && (model.filter.changed.max || model.filter.changed.min)) {
+          if( widgetInfo[model.attributes.column] ) {
+            $.extend( widgetInfo[model.attributes.column], model.filter.changed );
+          } else { 
+            widgetInfo[model.attributes.column] = model.filter.changed;
+          } 
+        } else { //else set max and min to the full range
+          widgetInfo[model.attributes.column] = {
+            min: model.attributes.start,
+            max: model.attributes.end
+          }
+        }
+      })
+
+      console.log('widgetInfo', widgetInfo);
+
+      var sqlTemplate = "SELECT a.*, b.median_age, b.median_household_income,range_score(median_age::numeric,{{median_age.min}},{{median_age.max}},0.5) * range_score(median_household_income::numeric, {{median_household_income.min}}, {{median_household_income.max}}) as score FROM nyct2010 a LEFT JOIN megaacs b ON a.geoid = b.geoid"
+
+      options.layers[1].attributes.sql = Mustache.render(sqlTemplate, widgetInfo)
+      
+      //wipe out the dataviews
+      options.dataviews=null;
+      return this.actualCreateInstance(options);
+ 
+ 
+  
+
+
+
+
+    }
+
+    
+  },
+
+  actualCreateInstance: function (options) {
     options = options || {};
     // WindshaftMap knows what types of layers should be sent to Windshaft:
     var layers = _.select(options.layers, function (layer) {
@@ -55,6 +104,7 @@ var WindshaftMap = Backbone.Model.extend({
     }
 
     var filters = new WindshaftFiltersCollection(filtersFromVisibleLayers);
+    console.log('filters', filters)
 
     this.client.instantiateMap({
       mapDefinition: mapConfig,
