@@ -48,9 +48,9 @@ var WindshaftMap = Backbone.Model.extend({
         if (model.filter && (model.filter.changed.max || model.filter.changed.min)) {
           if( widgetInfo[model.attributes.column] ) {
             $.extend( widgetInfo[model.attributes.column], model.filter.changed );
-          } else { 
+          } else {
             widgetInfo[model.attributes.column] = model.filter.changed;
-          } 
+          }
         } else { //else set max and min to the full range
           widgetInfo[model.attributes.column] = {
             min: model.attributes.start,
@@ -61,23 +61,23 @@ var WindshaftMap = Backbone.Model.extend({
 
       console.log('widgetInfo', widgetInfo);
 
-      var sqlTemplate = "SELECT a.*, b.median_age, b.median_household_income,range_score(median_age::numeric,{{median_age.min}},{{median_age.max}},0.5) * range_score(median_household_income::numeric, {{median_household_income.min}}, {{median_household_income.max}}) as score FROM nyct2010 a LEFT JOIN megaacs b ON a.geoid = b.geoid"
+      var sqlTemplate = "SELECT a.*, b.median_age, b.median_household_income,range_score(median_age::numeric,{{median_age.min}},{{median_age.max}},0.5) * range_score(median_household_income::numeric, {{median_household_income.min}}, {{median_household_income.max}})*total_pop as score FROM nyct2010 a LEFT JOIN megaacs b ON a.geoid = b.geoid"
 
       options.layers[1].attributes.sql = Mustache.render(sqlTemplate, widgetInfo)
-      
+
       //wipe out the dataviews
       options.dataviews=null;
       return this.actualCreateInstance(options);
- 
- 
-  
+
+
+
 
 
 
 
     }
 
-    
+
   },
 
   actualCreateInstance: function (options) {
