@@ -61,7 +61,7 @@ var WindshaftMap = Backbone.Model.extend({
 
       console.log('widgetInfo', widgetInfo);
 
-      var sqlTemplate = " select *, score*total_pop from ( SELECT a.*, b.median_age, b.median_household_income,range_score(median_age::numeric,{{median_age.min}},{{median_age.max}},0.5) * range_score(median_household_income::numeric, {{median_household_income.min}}, {{median_household_income.max}})*total_pop as score, total_pop FROM nyct2010 a LEFT JOIN megaacs b ON a.geoid = b.geoid)"
+      var sqlTemplate = " select *, score*total_pop pop_score from ( SELECT a.*, b.median_age, b.median_household_income,range_score(median_age::numeric,{{median_age.min}},{{median_age.max}},0.5) * range_score(median_household_income::numeric, {{median_household_income.min}}, {{median_household_income.max}})*total_pop as score, total_pop FROM nyct2010 a LEFT JOIN megaacs b ON a.geoid = b.geoid)"
 
       options.layers[1].attributes.sql = Mustache.render(sqlTemplate, widgetInfo)
 
