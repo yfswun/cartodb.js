@@ -35,6 +35,14 @@ LeafletLayerViewFactory.prototype._constructors = {
       throw new Error('torque library must have been loaded for a torque layer to work');
     }
     return new cdb.geo.LeafletTorqueLayer(layer, map);
+  },
+  'bi-torque': function (layer, map) {
+    // TODO for now adding this error to be thrown if object is not present, since it's dependency
+    // is not included in the standard bundle
+    if (!cdb.geo.LeafletBITorqueLayer) {
+      throw new Error('bi-torque library must have been loaded for a torque layer to work');
+    }
+    return new cdb.geo.LeafletBITorqueLayer(layer, map);
   }
 };
 

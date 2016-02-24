@@ -5,6 +5,7 @@ var GMapsBaseLayer = require('../geo/map/gmaps-base-layer');
 var PlainLayer = require('../geo/map/plain-layer');
 var CartoDBLayer = require('../geo/map/cartodb-layer');
 var TorqueLayer = require('../geo/map/torque-layer');
+var BITorqueLayer = require('../geo/map/bi-torque-layer');
 
 /*
  *  if we are using http and the tiles of base map need to be fetched from
@@ -99,6 +100,22 @@ Layers.register('torque', function (data, options) {
     }
   }
   return new TorqueLayer(data, {
+    map: options.map
+  });
+});
+
+Layers.register('bi-torque', function (data, options) {
+  normalizeOptions(data, options);
+  // default is https
+  if (options.https) {
+    if (data.sql_api_domain && data.sql_api_domain.indexOf('cartodb.com') !== -1) {
+      data.sql_api_protocol = 'https';
+      data.sql_api_port = 443;
+      data.tiler_protocol = 'https';
+      data.tiler_port = 443;
+    }
+  }
+  return new BITorqueLayer(data, {
     map: options.map
   });
 });
