@@ -68,6 +68,9 @@ cdb.geo.Layers = require('./geo/map/layers');
 cdb.geo.Map = require('./geo/map');
 cdb.geo.MapView = require('./geo/map-view');
 
+// FIXME - Needed to override torque layers for cartod1b. It would be nice to have a new "torque-bi" layer wihtin the layer view factory.
+cdb.geo.LeafletLayerViewFactory = require('./geo/leaflet/leaflet-layer-view-factory');
+
 _.extend(cdb.geo, require('./geo/gmaps'));
 
 // overwrites the Promise defined from the core bundle
