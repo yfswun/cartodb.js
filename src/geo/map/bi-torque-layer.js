@@ -11,6 +11,14 @@ var BITorqueLayer = TorqueLayer.extend({
 
   initialize: function (attrs, options) {
     TorqueLayer.prototype.initialize.apply(this, arguments);
+  },
+
+  setDataProvider: function (dataProvider) {
+    this._dataProvider = dataProvider;
+  },
+
+  getDataProvider: function () {
+    return this._dataProvider;
   }
 });
 
