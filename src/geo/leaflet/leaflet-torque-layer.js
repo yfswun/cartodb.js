@@ -22,6 +22,9 @@ var LeafletTorqueLayer = L.TorqueLayer.extend({
       }
     });
 
+    // TODO - Shit to avoid '_initialAttrs' removes needed bi-torque options like overview-tables
+    _.extend(attrs, layerModel.attributes);
+
     // initialize the base layers
     L.TorqueLayer.prototype.initialize.call(this, attrs);
 
