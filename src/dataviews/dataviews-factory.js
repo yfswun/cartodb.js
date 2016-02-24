@@ -101,7 +101,7 @@ module.exports = Model.extend({
     // We need to filter the layers to only select those that Windshaft knows about
     // and be able to calculate the right index.
     var interactiveLayers = this._layersCollection.select(function (layer) {
-      return layer.get('type') === 'CartoDB' || layer.get('type') === 'torque';
+      return layer.get('type') === 'CartoDB' || layer.get('type') === 'torque' || layer.get('type') === 'bi-torque';
     });
 
     var index = interactiveLayers.indexOf(layerModel);
