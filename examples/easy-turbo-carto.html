@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Easy Turbo Carto Example | CartoDB.js</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+    <link rel="shortcut icon" href="http://cartodb.com/assets/favicon.ico" />
+    <style>
+      html, body, #map {
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+    </style>
+
+    <link rel="stylesheet" href="http://libs.cartocdn.com/cartodb.js/v3/3.15/themes/css/cartodb.css" />
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <!-- include cartodb.js library -->
+    <script src="http://libs.cartocdn.com/cartodb.js/v3/3.15/cartodb.js"></script>
+
+    <script>
+      function main() {
+        cartodb.createVis('map', 'https://team.cartodb.com/u/saleiva/api/v2/viz/e7d2f5b4-b932-11e4-90f5-0e853d047bba/viz.json', {
+            shareable: false,
+            title: false,
+            description: false,
+            search: false,
+            tiles_loader: true,
+            legends: false,
+            interactivity: false
+        })
+        .done(function(vis, layers) {
+
+          _css = [
+            '#layer{',
+            ' marker-fill-opacity: 0.6;',
+            ' marker-line-color: #FFF;',
+            ' marker-line-width: 1;',
+            ' marker-line-opacity: 1;',
+            ' marker-placement: point;',
+            ' marker-multi-policy: largest;',
+            ' marker-type: ellipse;',
+            ' marker-fill: #FF9900;',
+            ' marker-allow-overlap: true;',
+            ' marker-clip: false;',
+            ' marker-comp-op: multiply;',
+            ' [price_per_sqmeter>0]{',
+            '   marker-width: ramp([price_per_sqmeter], 3, 48, 7, jenks);',
+            ' }',
+            ' [price_per_sqmeter=null]{',
+            '   marker-width: 2;',
+            ' }',
+            '}'
+          ].join(' ');
+
+          _l = layers[1].getSubLayer(0);
+          _l.setCartoCSS(_css);
+
+
+        })
+        .error(function(err) {
+          console.log(err);
+        });
+      }
+
+      window.onload = main;
+    </script>
+  </body>
+</html>
