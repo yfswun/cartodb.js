@@ -34,7 +34,8 @@ describe('vis/vis-view', function () {
       datasource: {
         user_name: 'wadus',
         maps_api_template: 'https://{user}.example.com:443',
-        stat_tag: 'ece6faac-7271-11e5-a85f-04013fc66a01'
+        stat_tag: 'ece6faac-7271-11e5-a85f-04013fc66a01',
+        force_cors: true // This is sometimes set in the editor
       }
     };
 

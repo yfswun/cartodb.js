@@ -113,7 +113,8 @@ var VisModel = Backbone.Model.extend({
     var windshaftClient = new WindshaftClient({
       endpoint: endpoint,
       urlTemplate: datasource.maps_api_template,
-      userName: datasource.user_name
+      userName: datasource.user_name,
+      forceCors: datasource.force_cors || true
     });
 
     var modelUpdater = new ModelUpdater({
