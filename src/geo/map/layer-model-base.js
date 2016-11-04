@@ -53,6 +53,19 @@ var MapLayer = Model.extend({
     this.set('error', error);
   },
 
+  disableLegends: function () {
+    this.set('legendsEnabled', false);
+  },
+
+  enableLegends: function () {
+    this.set('legendsEnabled', true);
+  },
+
+  areLegendsEnabled: function () {
+    // undefined or true means enabled
+    return this.get('legendsEnabled') !== false;
+  },
+
   /*
    * Compare the layer with the received one
    * @method isEqual

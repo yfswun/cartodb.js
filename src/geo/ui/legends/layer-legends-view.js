@@ -19,6 +19,7 @@ var LayerLegendsView = Backbone.View.extend({
 
     this.model.on('change:visible', this.render, this);
     this.model.on('change:layer_name', this.render, this);
+    this.model.on('change:legendsEnable', this.render, this);
 
     this._getLegendModels().forEach(function (model) {
       model.on('change:state', _.debounce(this.render, 150), this);
@@ -61,6 +62,7 @@ var LayerLegendsView = Backbone.View.extend({
   _shouldLayerLegendsBeVisible: function () {
     var showLegends = this.settingsModel.get('showLegends');
     var hasLegends = this.model.legends.hasAnyLegend();
+    if (!this.model.areLegendsEnabled()) return false;
     return this._shouldLayerSelectorBeVisible() || (this._isLayerVisible() && showLegends && hasLegends);
   },
 

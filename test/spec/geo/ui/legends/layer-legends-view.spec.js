@@ -92,6 +92,12 @@ describe('geo/ui/legends/layer-legends-view', function () {
     expect(this.layerLegendsView.$el.is(':empty')).toBe(true);
   });
 
+  it('should be hidden if legends are disabled at layer level', function () {
+    this.cartoDBLayer.set('legendsEnabled', false);
+    this.layerLegendsView.render();
+    expect(this.layerLegendsView.$el.is(':empty')).toBe(true);
+  });
+
   it('should not render layer selector checkbox if not embed', function () {
     this.settingsModel.set('layerSelectorEnabled', false);
     this.layerLegendsView.render();
