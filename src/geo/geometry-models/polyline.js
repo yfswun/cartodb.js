@@ -12,11 +12,15 @@ var Polyline = PathBase.extend({
   },
 
   toGeoJSON: function () {
-    var coords = GeoJSONHelper.convertLatLngsToGeoJSONPolylineCoords(this.getLatLngs());
+    var coords = GeoJSONHelper.convertLatLngsToGeoJSONPolylineCoords(this.getCoordinates());
     return {
       'type': 'LineString',
       'coordinates': coords
     };
+  },
+
+  getCoordinatesFromGeoJSONCoords: function (geoJSON) {
+    return GeoJSONHelper.getPolylineLatLngsFromGeoJSONCoords(geoJSON);
   }
 });
 

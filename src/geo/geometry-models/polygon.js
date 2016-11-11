@@ -12,11 +12,15 @@ var Polygon = PathBase.extend({
   },
 
   toGeoJSON: function () {
-    var coords = GeoJSONHelper.convertLatLngsToGeoJSONPolygonCoords(this.getLatLngs());
+    var coords = GeoJSONHelper.convertLatLngsToGeoJSONPolygonCoords(this.getCoordinates());
     return {
       'type': 'Polygon',
       'coordinates': [ coords ]
     };
+  },
+
+  getCoordinatesFromGeoJSONCoords: function (geoJSON) {
+    return GeoJSONHelper.getPolygonLatLngsFromGeoJSONCoords(geoJSON);
   }
 });
 

@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var Model = require('../../core/model');
 
 var GeometryBase = Model.extend({
@@ -19,6 +20,17 @@ var GeometryBase = Model.extend({
 
   toGeoJSON: function () {
     throw new Error('subclasses of GeometryBase must implement toGeoJSON');
+  },
+
+  setCoordinatesFromGeoJSON: function (geoJSON) {
+    var coordinates = this.getCoordinatesFromGeoJSONCoords(geoJSON);
+    if (!_.isEqual(coordinates, this.getCoordinates())) {
+      this.setCoordinates(coordinates);
+    }
+  },
+
+  getCoordinatesFromGeoJSONCoords: function (geoJSON) {
+    throw new Error('subclasses of GeometryBase must implement getCoordinatesFromGeoJSONCoords');
   },
 
   _triggerChangeEvent: function () {

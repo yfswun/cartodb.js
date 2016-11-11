@@ -75,7 +75,7 @@ var Vis = View.extend({
 
     var featureEvents = new FeatureEvents({
       mapView: this.mapView,
-      mapModel: this.model.map
+      layersCollection: this.model.map.layers
     });
 
     new MapCursorManager({ // eslint-disable-line
@@ -166,10 +166,6 @@ var Vis = View.extend({
       if (overlay && (type in options) && options[type] === false) overlay.hide();
 
       var opt = data.options;
-
-      if (type === 'layer_selector' && options[type] || type === 'layer_selector' && overlay.model.get('display') && options[type] === undefined) {
-        overlay.show();
-      }
 
       if (type === 'fullscreen' && options[type] || type === 'fullscreen' && opt.display && options[type] === undefined) {
         overlay.show();
