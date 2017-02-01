@@ -8,13 +8,17 @@ module.exports = Backbone.View.extend({
     if (!opts.imageClass) { throw new Error('Image class is mandatory.'); }
 
     this._color = this.$el.data('color');
-    this._icon = this.$el.data('icon');
+    this._icon = this._toHttps(this.$el.data('icon'));
 
     this._imageClass = opts.imageClass;
     this._lastImage = {
       url: null,
       content: null
     };
+  },
+
+  _toHttps: function (url) {
+    return url.replace(/^http:\/\//i, 'https://');
   },
 
   _loadImage: function () {
