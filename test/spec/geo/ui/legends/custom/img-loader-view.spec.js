@@ -13,7 +13,7 @@ describe('geo/ui/legends/custom/img-loader-view', function () {
     jasmine.Ajax.stubRequest(new RegExp('^http(s)?.*/logo.svg.*'))
       .andReturn(svgResponse);
 
-    this.svgUrl = 'http://image.io/logo.svg';
+    this.svgUrl = 'https://image.io/logo.svg';
     this.color = '#cebada';
 
     var $el = $('<div class="js-image-container" data-icon="' + this.svgUrl + '" data-color="' + this.color + '">');
@@ -31,7 +31,7 @@ describe('geo/ui/legends/custom/img-loader-view', function () {
 
   describe('._loadImage', function () {
     it('should render resource if format is not SVG', function () {
-      this.imgUrl = 'http://www.imageserver.com/image.png';
+      this.imgUrl = 'https://www.imageserver.com/image.png';
 
       var $pngEl = $('<div class="js-image-container" data-icon="' + this.imgUrl + '" data-color="' + this.color + '">');
 
@@ -126,6 +126,16 @@ describe('geo/ui/legends/custom/img-loader-view', function () {
       expect(this.view._isSVG('http://image.io/image.png')).toBe(false);
       expect(this.view._isSVG('http://image.io/image.png?req=markup')).toBe(false);
       expect(this.view._isSVG('')).toBe(false);
+    });
+  });
+
+  describe('._toHttps', function () {
+    it('transform protocol if necessary', function () {
+      expect(this.view._toHttps('http://image.io/image.svg')).toBe('https://image.io/image.svg');
+      expect(this.view._toHttps('http://image.io/image.svg?req=ajax')).toBe('https://image.io/image.svg?req=ajax');
+      expect(this.view._toHttps('http://image.io/image.png')).toBe('https://image.io/image.png');
+      expect(this.view._toHttps('http://image.io/image.png?req=markup')).toBe('https://image.io/image.png?req=markup');
+      expect(this.view._toHttps('')).toBe('');
     });
   });
 });
